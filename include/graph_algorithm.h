@@ -43,6 +43,16 @@ public:
 	void connected_component_with_dfs(
 		const graph&, std::vector<std::shared_ptr<graph>>&);
 
+	//
+	// Find the minimal spanning tree with the prim algorithm.
+	//
+	void prim(const graph&, const vertex&, graph&);
+
+	//
+	// Find the minimal spanning tree with the kruskal algorithm.
+	//
+	void kruskal(const graph&, graph&);
+
 private:
 	void depth_first_search_recursive(
 		const graph&,

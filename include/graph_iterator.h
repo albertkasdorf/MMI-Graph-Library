@@ -5,6 +5,9 @@ namespace graph
 {
 class vertex;
 
+//
+// http://anderberg.me/2016/07/04/c-custom-iterators/
+//
 class vertex_iterator
 {
 private:

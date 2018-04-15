@@ -2,6 +2,7 @@
 
 #include <deque>
 #include <memory>
+#include <queue>
 
 #include <graph_vertex.h>
 #include <graph.h>
@@ -145,5 +146,65 @@ void algorithm::connected_component(
 		continue;
 	}
 }
+
+//
+// Find the minimal spanning tree with the prim algorithm.
+//
+void algorithm::prim(
+	const graph& graph_full, const vertex& vertex_start, graph& graph_mst)
+{
+	std::priority_queue<edge, std::vector<edge>, compare_edge_weight> queue;
+	std::set<vertex, compare_vertex_id> vertices_visited;
+
+	vertices_visited.insert(vertex_start);
+	for(const edge edge : graph_full.edge_get(vertex_start))
+	{
+		queue.push(edge);
+	}
+
+	while(!queue.empty())
+	{
+		edge edge_current = queue.top();
+		queue.pop();
+
+		const vertex vertex_source = vertex(edge_current.source_id());
+		const vertex vertex_target = vertex(edge_current.target_id());
+
+		const bool source_visited = vertices_visited.count(vertex_source) != 0;
+		const bool target_visited = vertices_visited.count(vertex_target) != 0;
+
+		if(source_visited && target_visited)
+		{
+			continue;
+		}
+
+		graph_mst.add(edge_current);
+		if(!source_visited)
+		{
+			vertices_visited.insert(vertex_source);
+			for(const edge edge : graph_full.edge_get(vertex_source))
+			{
+				queue.push(edge);
+			}
+		}
+		if(!target_visited)
+		{
+			vertices_visited.insert(vertex_target);
+			for(const edge edge : graph_full.edge_get(vertex_target))
+			{
+				queue.push(edge);
+			}
+		}
+	}
+}
+
+//
+// Find the minimal spanning tree with the kruskal algorithm.
+//
+void algorithm::kruskal(const graph& graph_full, graph& graph_mst)
+{
+
+}
+
 
 }

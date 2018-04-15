@@ -27,6 +27,11 @@ struct compare_edge_weight
 	{
 		return lhs->weight() > rhs->weight();
 	}
+
+	bool operator()(const edge& lhs, const edge& rhs) const
+	{
+		return lhs.weight() > rhs.weight();
+	}
 };
 
 }
