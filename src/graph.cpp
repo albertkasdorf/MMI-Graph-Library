@@ -1,7 +1,7 @@
 #include <graph.h>
 
-#include <vertex.h>
-#include <edge.h>
+#include <graph_vertex.h>
+#include <graph_edge.h>
 #include <comparer.h>
 
 namespace graph
@@ -17,6 +17,15 @@ graph::~graph()
 		delete vertex.second;
 	for(const auto& edge : edges)
 		delete edge;
+}
+
+void graph::add(const vertex& vertex_new)
+{
+	bool vertex_found = vertices.count(vertex_new.id()) != 0;
+	if(!vertex_found)
+	{
+		vertices[vertex_new.id()] = new vertex(vertex_new);
+	}
 }
 
 vertex graph::vertex_get(std::uint32_t id) const
@@ -49,24 +58,15 @@ const std::vector<edge> graph::edge_get(const vertex& vertex) const
 	return edges_adjacent;
 }
 
-void graph::edge_add(const edge& edge_new)
+void graph::add(const edge& edge_new)
 {
 	const std::uint32_t source_id = edge_new.source_id();
 	const std::uint32_t target_id = edge_new.target_id();
 	const bool directed = edge_new.directed();
 
 	// create source vertex if not found
-	bool vertex_found = vertices.count(source_id) != 0;
-	if(!vertex_found)
-	{
-		vertices[source_id] = new vertex(source_id);
-	}
-
-	vertex_found = vertices.count(target_id) != 0;
-	if(!vertex_found)
-	{
-		vertices[target_id] = new vertex(target_id);
-	}
+	this->add(vertex(source_id));
+	this->add(vertex(target_id));
 
 	edge* new_edge = new edge(edge_new);
 	edges.push_back(new_edge);
@@ -82,6 +82,16 @@ void graph::edge_add(const edge& edge_new)
 		((edges_map[source_id])[target_id]).push_back(new_edge);
 		((edges_map[target_id])[source_id]).push_back(new_edge);
 	}
+}
+
+vertex_iterator graph::vertices_begin() const
+{
+	return vertex_iterator(vertices.begin());
+}
+
+vertex_iterator graph::vertices_end() const
+{
+	return vertex_iterator(vertices.end());
 }
 
 

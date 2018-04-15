@@ -11,6 +11,7 @@ private:
 
 public:
 	vertex(const std::uint32_t id) : _id(id) {}
+	vertex(const vertex& rhs) : _id(rhs.id()) {}
 	~vertex() {}
 
 public:

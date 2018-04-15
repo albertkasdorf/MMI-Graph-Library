@@ -4,6 +4,7 @@
 #include <map>
 #include <cstdint>
 #include <vector>
+#include <graph_iterator.h>
 
 namespace graph
 {
@@ -23,21 +24,35 @@ private:
 
 public:
 	//
-	// Return a copy of the vertex with the provided vertex id.
+	// Add a vertex to the graph.
 	//
-	vertex vertex_get(std::uint32_t) const;
-
-	//
-	// Return the number of vertices.
-	//
-	std::uint32_t vertex_count_get(void) const;
+	void add(const vertex&);
 
 	//
 	// Add a new edge to the graph.
 	// Remark:
 	// - Vertices created if they not exist in graph.
 	//
-	void edge_add(const edge&);
+	void add(const edge&);
+
+
+
+
+	//
+	// Return a copy of the vertex with the provided vertex id.
+	//
+	vertex vertex_get(std::uint32_t) const;
+
+
+	//
+	// Return the number of vertices.
+	//
+	std::uint32_t vertex_count_get(void) const;
+
+	vertex_iterator vertices_begin() const;
+	vertex_iterator vertices_end() const;
+
+
 
 	//
 	// Return the edges of a given vertex.

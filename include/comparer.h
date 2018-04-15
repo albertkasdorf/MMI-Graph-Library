@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vertex.h>
-#include <edge.h>
+#include <graph_vertex.h>
+#include <graph_edge.h>
 
 namespace graph
 {
