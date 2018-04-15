@@ -59,10 +59,10 @@ void algorithm::depth_first_search(
 {
 	std::set<vertex, compare_vertex_id> lookup;
 
-	depth_first_search(graph_full, vertex_start, lookup, graph_sub);
+	depth_first_search_recursive(graph_full, vertex_start, lookup, graph_sub);
 }
 
-void algorithm::depth_first_search(
+void algorithm::depth_first_search_recursive(
 	const graph& graph_full,
 	const vertex& vertex_to_expand,
 	std::set<vertex, compare_vertex_id>& lookup,
@@ -80,32 +80,42 @@ void algorithm::depth_first_search(
 			continue;
 
 		graph_sub.add(edge);
-		depth_first_search(graph_full, vertex_adjacent, lookup, graph_sub);
+		depth_first_search_recursive(graph_full, vertex_adjacent, lookup, graph_sub);
 	}
+}
 
+void algorithm::connected_component_with_bfs(
+	const graph& graph_full,
+	std::vector<std::shared_ptr<graph>>& subgraphs)
+{
+	connected_component(
+		graph_full,
+		subgraphs,
+		std::bind(&algorithm::breadth_first_search,
+			this,
+			std::placeholders::_1,
+			std::placeholders::_2,
+			std::placeholders::_3));
+}
 
-
-//	// foreach child of v
-//	for(int col = 0; col < mat.cols(); col++ )
-//	{
-//		if( col == v )
-//			continue;
-
-//		const auto val = mat.cell(v, col);
-//		if( val != 1 )
-//			continue;
-
-//		const auto w = col;
-//		if(visited_nodes.count(w) == 1)
-//			continue;
-
-//		dfs(mat, w, visited_nodes, graph_nodes);
-//	}
+void algorithm::connected_component_with_dfs(
+	const graph& graph_full,
+	std::vector<std::shared_ptr<graph>>& subgraphs)
+{
+	connected_component(
+		graph_full,
+		subgraphs,
+		std::bind(&algorithm::depth_first_search,
+			this,
+			std::placeholders::_1,
+			std::placeholders::_2,
+			std::placeholders::_3));
 }
 
 void algorithm::connected_component(
 	const graph& graph_full,
-	std::vector<std::shared_ptr<graph>>& subgraphs )
+	std::vector<std::shared_ptr<graph>>& subgraphs,
+	const std::function<void(const graph&, const vertex&, graph&)>& search_algorithm )
 {
 	std::set<vertex, compare_vertex_id> lookup;
 
@@ -121,7 +131,7 @@ void algorithm::connected_component(
 
 		std::shared_ptr<graph> graph_sub = std::make_shared<graph>();
 
-		breadth_first_search(graph_full, vertex_current, *graph_sub);
+		search_algorithm(graph_full, vertex_current, *graph_sub);
 
 		for(vertex_iterator vi_graph_sub = graph_sub->vertices_begin();
 			vi_graph_sub != graph_sub->vertices_end();

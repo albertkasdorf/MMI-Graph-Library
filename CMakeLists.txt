@@ -13,14 +13,16 @@ set(HEADERS
 	include/graph_loader.h
 	include/graph_algorithm.h
 	include/comparer.h
-	include/graph_iterator.h)
+	include/graph_iterator.h
+	include/practical_training.h)
 set(SOURCES
 	src/main.cpp
 	src/graph_algorithm.cpp
 	src/graph.cpp
 	src/graph_loader.cpp
 	src/graph_iterator.cpp
-	src/graph_edge.cpp)
+	src/graph_edge.cpp
+	src/practical_training.cpp)
 
 add_custom_target(Headers SOURCES ${HEADERS})
 add_executable(${PROJECT_NAME} ${SOURCES})

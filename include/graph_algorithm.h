@@ -2,6 +2,7 @@
 #include <memory>
 #include <vector>
 #include <set>
+#include <functional>
 
 namespace graph
 {
@@ -30,16 +31,32 @@ public:
 
 	//
 	// Compute the connected components of a graph und returning all subgraphs.
+	// Using the breadth first search spanning tree algorithm.
 	//
-	void connected_component(
+	void connected_component_with_bfs(
+		const graph&, std::vector<std::shared_ptr<graph>>&);
+
+	//
+	// Compute the connected components of a graph und returning all subgraphs.
+	// Using the depth first search spanning tree algorithm.
+	//
+	void connected_component_with_dfs(
 		const graph&, std::vector<std::shared_ptr<graph>>&);
 
 private:
-	void depth_first_search(
+	void depth_first_search_recursive(
 		const graph&,
 		const vertex&,
 		std::set<vertex, compare_vertex_id>&,
 		graph& );
+
+	//
+	// Compute the connected components of a graph und returning all subgraphs.
+	//
+	void connected_component(
+		const graph&,
+		std::vector<std::shared_ptr<graph>>&,
+		const std::function<void(const graph&, const vertex&, graph&)>&);
 };
 
 }
