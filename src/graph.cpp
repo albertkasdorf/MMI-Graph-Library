@@ -29,7 +29,7 @@ std::uint32_t graph::vertex_count_get(void) const
 	return vertices.size();
 }
 
-std::vector<edge> graph::edge_get(const vertex& vertex) const
+const std::vector<edge> graph::edge_get(const vertex& vertex) const
 {
 	std::vector<edge> edges_adjacent;
 
@@ -49,27 +49,26 @@ std::vector<edge> graph::edge_get(const vertex& vertex) const
 	return edges_adjacent;
 }
 
-void graph::edge_add(
-	const std::uint32_t source_id,
-	const std::uint32_t target_id,
-	const float weight,
-	const bool directed)
+void graph::edge_add(const edge& edge_new)
 {
-	// gerichtet und ungerichtete müssen anders hinzugefügt werden?
+	const std::uint32_t source_id = edge_new.source_id();
+	const std::uint32_t target_id = edge_new.target_id();
+	const bool directed = edge_new.directed();
 
-	auto iter = vertices.find(source_id);
-	if(iter == std::end(vertices))
+	// create source vertex if not found
+	bool vertex_found = vertices.count(source_id) != 0;
+	if(!vertex_found)
 	{
 		vertices[source_id] = new vertex(source_id);
 	}
 
-	iter = vertices.find(target_id);
-	if(iter == std::end(vertices))
+	vertex_found = vertices.count(target_id) != 0;
+	if(!vertex_found)
 	{
 		vertices[target_id] = new vertex(target_id);
 	}
 
-	auto new_edge = new edge(source_id, target_id);
+	edge* new_edge = new edge(edge_new);
 	edges.push_back(new_edge);
 
 	if(directed)
@@ -80,19 +79,9 @@ void graph::edge_add(
 	else
 	{
 		// add the same edge in both direction
-		// TODO: filter out edges with same adress in search/iteration
 		((edges_map[source_id])[target_id]).push_back(new_edge);
 		((edges_map[target_id])[source_id]).push_back(new_edge);
 	}
-}
-
-void graph::edge_add(const edge& edge_new)
-{
-	edge_add(
-		edge_new.source_id(),
-		edge_new.target_id(),
-		edge_new.weight(),
-		edge_new.directed());
 }
 
 

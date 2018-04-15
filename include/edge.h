@@ -13,14 +13,22 @@ private:
 	bool _directed;
 
 public:
-	edge(const std::uint32_t source_id, const std::uint32_t target_id) :
-		_source_id(source_id), _target_id(target_id)
-	{
-	}
-
-	~edge()
-	{
-	}
+	edge(
+		const std::uint32_t source_id,
+		const std::uint32_t target_id,
+		const float weight = 0.f,
+		const bool directed = false)
+		:
+		_source_id(source_id),
+		_target_id(target_id),
+		_weight(weight),
+		_directed(directed) { }
+	edge(const edge& rhs) :
+		_source_id(rhs.source_id()),
+		_target_id(rhs.target_id()),
+		_weight(rhs.weight()),
+		_directed(rhs.directed()) { }
+	~edge() { }
 
 public:
 	std::uint32_t source_id(void) const
@@ -43,8 +51,5 @@ public:
 		return _directed;
 	}
 };
-
-
-
 
 }
