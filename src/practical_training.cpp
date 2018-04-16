@@ -20,6 +20,13 @@ practical_training::~practical_training()
 
 void practical_training::task00_debugging(void)
 {
+	graph::graph g;
+
+	g.add(graph::edge(1, 2));
+	g.add(graph::edge(1, 3));
+	g.add(graph::edge(2, 3));
+
+	g.remove(graph::edge(2, 3));
 }
 
 void practical_training::task01_bfs_dfs(void)
@@ -46,7 +53,7 @@ void practical_training::task01_bfs_dfs(void)
 void practical_training::task02_prim_kruskal(void)
 {
 	graph::loader graph_loader;
-	graph::files graph_file = graph::files::G_1_2;
+	graph::files graph_file = graph::files::G_1_20;
 	graph::graph g, t;
 	graph::algorithm graph_algorithm;
 	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;

@@ -86,4 +86,28 @@ bool edge::directed(void) const
 	return _directed;
 }
 
+edge edge::reverse_direction() const
+{
+	edge edge_reversed(*this);
+	edge_reversed._source_id = this->_target_id;
+	edge_reversed._target_id = this->_source_id;
+	return edge_reversed;
+}
+
+bool edge::operator ==(const edge& rhs) const
+{
+	const bool equal =
+		(_source_id == rhs._source_id) &&
+		(_target_id == rhs._target_id) &&
+		(_weight == rhs._weight) &&
+		(_directed == rhs._directed);
+	return equal;
+}
+
+bool edge::operator !=(const edge& rhs) const
+{
+	const bool not_equal = !(*this == rhs);
+	return not_equal;
+}
+
 }

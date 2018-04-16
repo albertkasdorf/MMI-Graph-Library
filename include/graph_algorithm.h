@@ -53,6 +53,11 @@ public:
 	//
 	void kruskal(const graph&, graph&);
 
+	//
+	// Detect if the graph has a cycle.
+	//
+	bool has_cycle(const graph&, const vertex&);
+
 private:
 	void depth_first_search_recursive(
 		const graph&,

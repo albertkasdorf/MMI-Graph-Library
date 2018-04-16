@@ -31,6 +31,12 @@ public:
 
 	float weight(void) const;
 	bool directed(void) const;
+
+	edge reverse_direction() const;
+
+public:
+	bool operator ==(const edge& rhs) const;
+	bool operator !=(const edge& rhs) const;
 };
 
 }

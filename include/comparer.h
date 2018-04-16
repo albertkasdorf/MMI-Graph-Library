@@ -34,4 +34,17 @@ struct compare_edge_weight
 	}
 };
 
+struct compare_edge_ids
+{
+	bool operator()(const edge& lhs, const edge& rhs) const
+	{
+		const std::uint64_t lhs_id =
+			(static_cast<std::uint64_t>(lhs.source_id()) << 32) + lhs.target_id();
+		const std::uint64_t rhs_id =
+			(static_cast<std::uint64_t>(rhs.source_id()) << 32) + rhs.target_id();
+
+		return lhs_id > rhs_id;
+	}
+};
+
 }

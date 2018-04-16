@@ -3,6 +3,8 @@
 #include <deque>
 #include <memory>
 #include <queue>
+#include <stack>
+#include <cassert>
 
 #include <graph_vertex.h>
 #include <graph.h>
@@ -203,7 +205,82 @@ void algorithm::prim(
 //
 void algorithm::kruskal(const graph& graph_full, graph& graph_mst)
 {
+	std::priority_queue<edge, std::vector<edge>, compare_edge_weight> queue;
 
+	for(const edge& edge : graph_full.edge_get())
+	{
+		queue.push(edge);
+	}
+
+	while(!queue.empty())
+	{
+		const edge edge_add = queue.top();
+		queue.pop();
+
+		graph_mst.add(edge_add);
+
+		const bool graph_has_cycle =
+				has_cycle(graph_mst, vertex(edge_add.source_id()));
+		if(graph_has_cycle)
+			graph_mst.remove(edge_add);
+
+		continue;
+	}
+
+	return;
+}
+
+bool algorithm::has_cycle(const graph& graph_full, const vertex& vertex_start)
+{
+	std::set<vertex, compare_vertex_id> vertices_visited;
+	std::set<edge, compare_edge_ids> edges_visited;
+	std::stack<edge> stack;
+
+	vertices_visited.insert(vertex_start);
+	for(const edge edge : graph_full.edge_get(vertex_start))
+	{
+		stack.push(edge);
+	}
+
+	while(!stack.empty())
+	{
+		edge edge_current = stack.top();
+		stack.pop();
+
+		edges_visited.insert(edge_current);
+		edges_visited.insert(edge_current.reverse_direction());
+
+		const vertex vertex_source = vertex(edge_current.source_id());
+		const vertex vertex_target = vertex(edge_current.target_id());
+
+		const bool source_visited = vertices_visited.count(vertex_source) != 0;
+		const bool target_visited = vertices_visited.count(vertex_target) != 0;
+
+		if(source_visited && target_visited)
+		{
+			return true;
+		}
+
+		const vertex* vertex_next = nullptr;
+
+		if(!source_visited)
+			vertex_next = &vertex_source;
+		else if(!target_visited)
+			vertex_next = &vertex_target;
+		else
+			assert(false);
+
+		vertices_visited.insert(*vertex_next);
+		for(const edge edge_next : graph_full.edge_get(*vertex_next))
+		{
+			if(edges_visited.count(edge_next) != 0)
+				continue;
+
+			stack.push(edge_next);
+		}
+	}
+
+	return false;
 }
 
 

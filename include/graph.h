@@ -35,6 +35,13 @@ public:
 	//
 	void add(const edge&);
 
+	//
+	// Remove an edge from the graph.
+	// Remark:
+	// - Unconnected vertices are not removed.
+	//
+	void remove(const edge&);
+
 
 
 
@@ -58,6 +65,7 @@ public:
 	// Return the edges of a given vertex.
 	//
 	const std::vector<edge> edge_get(const vertex&) const;
+	std::vector<edge> edge_get(void) const;
 };
 
 }
