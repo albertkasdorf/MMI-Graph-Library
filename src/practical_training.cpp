@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <chrono>
+#include <functional>
+#include <string>
 
 #include <graph.h>
 #include <graph_loader.h>
@@ -20,13 +22,64 @@ practical_training::~practical_training()
 
 void practical_training::task00_debugging(void)
 {
-	graph::graph g;
+//	graph::graph g;
 
-	g.add(graph::edge(1, 2));
-	g.add(graph::edge(1, 3));
-	g.add(graph::edge(2, 3));
+//	g.add(graph::edge(1, 2));
+//	g.add(graph::edge(1, 3));
+//	g.add(graph::edge(2, 3));
 
-	g.remove(graph::edge(2, 3));
+//	g.remove(graph::edge(2, 3));
+
+
+	/*
+	 * graph
+	 * - vertex_add(id) : void
+	 * - vertex_remove(vertex) : void
+	 * - vertex_get(void) : iterator_pair<std::shared_ptr<const vertex>>
+	 * - edge_add(src, tgt, weight, direction);
+	 * - edge_remove(edge) : void
+	 * - edge_get(void) : iterator_pair<std::shared_ptr<const edge>>
+	 *
+	 * vertex
+	 * - id_get(void) : id
+	 * - edges_get(void) : iterator_pair<std::shared_ptr<const edge>>
+	 *
+	 * edge
+	 * - vertex_get(src/tgt) : std::shared_ptr<const vertex>
+	 * - twin_has() : bool
+	 * - twin_get() : std::shared_ptr<const edge>
+	 * - weight_get() : float
+	 * - weight_has() : bool
+	 *
+	 * vertex_const_iterator
+	 * edge_const_iterator
+	 *
+	 */
+
+
+	std::shared_ptr<graph::vertex> v = std::make_shared<graph::vertex>(8045);
+	std::shared_ptr<const graph::vertex> cv = v;
+	v->id(45);
+	graph::vertex* pv = v.get();
+	const graph::vertex* pcv = cv.get();
+
+	std::hash<std::string> hasher;
+	auto h1 = hasher("");
+	auto h3 = hasher("12-34");
+	auto h2 = hasher("34-12");
+
+	std::multimap<int, std::string> mm;
+
+	mm.insert(std::make_pair(45, "Hello"));
+	mm.insert(std::make_pair(45, "Hello2"));
+
+	auto count_of_45 = mm.count(45);
+
+	auto wtf = mm.find(45);
+	//for(auto element : mm.find(45))
+	//	continue;
+
+	return;
 }
 
 void practical_training::task01_bfs_dfs(void)

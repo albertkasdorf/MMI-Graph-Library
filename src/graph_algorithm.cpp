@@ -5,6 +5,8 @@
 #include <queue>
 #include <stack>
 #include <cassert>
+#include <chrono>
+#include <iostream>
 
 #include <graph_vertex.h>
 #include <graph.h>
@@ -206,6 +208,10 @@ void algorithm::prim(
 void algorithm::kruskal(const graph& graph_full, graph& graph_mst)
 {
 	std::priority_queue<edge, std::vector<edge>, compare_edge_weight> queue;
+	std::size_t _count_cycle = 0, _count_remove = 0;
+	std::chrono::time_point<std::chrono::high_resolution_clock>
+		_start_cycle, _start_remove, _end_cycle, _end_remove;
+	std::size_t _cycle = 0, _remove = 0;
 
 	for(const edge& edge : graph_full.edge_get())
 	{
@@ -219,10 +225,21 @@ void algorithm::kruskal(const graph& graph_full, graph& graph_mst)
 
 		graph_mst.add(edge_add);
 
+		_start_cycle = std::chrono::high_resolution_clock::now();
 		const bool graph_has_cycle =
-				has_cycle(graph_mst, vertex(edge_add.source_id()));
+			has_cycle(graph_mst, vertex(edge_add.source_id()));
+		_end_cycle = std::chrono::high_resolution_clock::now();
+		_cycle += std::chrono::duration_cast<std::chrono::milliseconds>(_end_cycle - _start_cycle).count();
+		_count_cycle++;
+
 		if(graph_has_cycle)
+		{
+			_start_remove = std::chrono::high_resolution_clock::now();
 			graph_mst.remove(edge_add);
+			_end_remove = std::chrono::high_resolution_clock::now();
+			_remove += std::chrono::duration_cast<std::chrono::milliseconds>(_end_remove - _start_remove).count();
+			_count_remove++;
+		}
 
 		continue;
 	}

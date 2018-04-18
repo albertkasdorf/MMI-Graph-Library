@@ -16,6 +16,7 @@ public:
 
 public:
 	std::uint32_t id(void) const {return _id;}
+	void id(std::uint32_t id) {_id = id;}
 };
 
 }
