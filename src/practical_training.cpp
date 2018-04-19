@@ -4,6 +4,7 @@
 #include <chrono>
 #include <functional>
 #include <string>
+#include <sstream>
 
 #include <graph.h>
 #include <graph_loader.h>
@@ -37,7 +38,13 @@ void practical_training::task00_debugging(void)
 	 * - vertex_remove(vertex) : void
 	 * - vertex_get(void) : iterator_pair<std::shared_ptr<const vertex>>
 	 * - edge_add(src, tgt, weight, direction);
+	 *	- kante duplizieren
+	 *	- Vertices raussuchen
+	 *	- Kante bei den vertices eintragen
+	 *	- Verticies bei der Kante eintragen
 	 * - edge_remove(edge) : void
+	 *	- Kante aus den Vertices entfernen
+	 *	- vertices entfernen, falls leer
 	 * - edge_get(void) : iterator_pair<std::shared_ptr<const edge>>
 	 *
 	 * vertex
@@ -62,6 +69,7 @@ void practical_training::task00_debugging(void)
 	v->id(45);
 	graph::vertex* pv = v.get();
 	const graph::vertex* pcv = cv.get();
+	const graph::vertex& rpc = *cv;
 
 	std::hash<std::string> hasher;
 	auto h1 = hasher("");
@@ -78,6 +86,12 @@ void practical_training::task00_debugging(void)
 	auto wtf = mm.find(45);
 	//for(auto element : mm.find(45))
 	//	continue;
+
+	std::stringstream ss;
+	ss << 45 << "-" << 67;
+	const std::string combined = ss.str();
+
+
 
 	return;
 }

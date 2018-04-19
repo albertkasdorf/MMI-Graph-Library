@@ -22,7 +22,8 @@ set(SOURCES
 	src/graph_loader.cpp
 	src/graph_iterator.cpp
 	src/graph_edge.cpp
-	src/practical_training.cpp)
+	src/practical_training.cpp
+	src/graph_vertex.cpp)
 
 add_custom_target(Headers SOURCES ${HEADERS})
 add_executable(${PROJECT_NAME} ${SOURCES})
