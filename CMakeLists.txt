@@ -12,9 +12,9 @@ set(HEADERS
 	include/graph_files.h
 	include/graph_loader.h
 	include/graph_algorithm.h
-	include/comparer.h
 	include/graph_iterator.h
-	include/practical_training.h)
+	include/practical_training.h
+	include/graph_comparer.h)
 set(SOURCES
 	src/main.cpp
 	src/graph_algorithm.cpp
@@ -23,7 +23,8 @@ set(SOURCES
 	src/graph_iterator.cpp
 	src/graph_edge.cpp
 	src/practical_training.cpp
-	src/graph_vertex.cpp)
+	src/graph_vertex.cpp
+	src/graph_comparer.cpp)
 
 add_custom_target(Headers SOURCES ${HEADERS})
 add_executable(${PROJECT_NAME} ${SOURCES})

@@ -4,7 +4,9 @@
 #include <map>
 #include <cstdint>
 #include <vector>
+#include <memory>
 #include <graph_iterator.h>
+#include <graph_comparer.h>
 
 namespace graph
 {
@@ -22,18 +24,28 @@ private:
 	std::vector<edge*> edges;
 	std::map<std::uint32_t, std::map<std::uint32_t, std::vector<edge*>>> edges_map;
 
+	std::map<std::size_t, std::shared_ptr<vertex>> vertices2;
+	std::multimap<std::size_t, std::shared_ptr<edge>> edges2;
+
 public:
 	//
 	// Add a vertex to the graph.
 	//
-	void add(const vertex&);
+	void vertex_add(const uint32_t);
 
 	//
 	// Add a new edge to the graph.
 	// Remark:
 	// - Vertices created if they not exist in graph.
 	//
-	void add(const edge&);
+	void edge_add(const edge&);
+	void edge_undirected_add(
+		const uint32_t&, const uint32_t&);
+	void edge_undirected_add(
+		const uint32_t&, const uint32_t&, const float&);
+	void edge_undirected_add(
+		const uint32_t&, const uint32_t&, const float*);
+
 
 	//
 	// Remove an edge from the graph.
@@ -48,7 +60,7 @@ public:
 	//
 	// Return a copy of the vertex with the provided vertex id.
 	//
-	vertex vertex_get(std::uint32_t) const;
+	const vertex* vertex_get(const std::uint32_t) const;
 
 
 	//
@@ -66,6 +78,9 @@ public:
 	//
 	const std::vector<edge> edge_get(const vertex&) const;
 	std::vector<edge> edge_get(void) const;
+
+private:
+	vertex* vertex_get_internal(const std::uint32_t) const;
 };
 
 }

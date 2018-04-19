@@ -1,113 +1,105 @@
 #include <graph_edge.h>
+#include <cassert>
+#include <functional>
+#include <string>
+#include <sstream>
 #include <graph_vertex.h>
 
 namespace graph
 {
 
-edge::edge(
-	const std::uint32_t source_id,
-	const std::uint32_t target_id,
-	const float weight,
-	const bool directed)
-	:
-	_source_id(source_id),
-	_target_id(target_id),
-	_weight(weight),
-	_directed(directed)
+edge::edge()
 {
-}
-
-edge::edge(const edge& rhs) :
-	_source_id(rhs.source_id()),
-	_target_id(rhs.target_id()),
-	_weight(rhs.weight()),
-	_directed(rhs.directed())
-{
+	_source = nullptr;
+	_target = nullptr;
+	_twin = nullptr;
+	_has_weight = false;
+	_weight = 0.f;
 }
 
 edge::~edge()
 {
 }
 
-
-std::uint32_t edge::source_id(void) const
+const vertex* edge::source(void) const
 {
-	return _source_id;
+	return _source;
 }
 
-/*
- * edge: 6 -> 7
- *
- * pov: 6
- * - source_id: 6
- * - target_id: 7
- *
- * pov: 7
- * - source_id: 7
- * - target_id: 6
- *
- */
-std::uint32_t edge::source_id(const vertex& point_of_view) const
+const vertex* edge::target(void) const
 {
-	if( _source_id == point_of_view.id())
-	{
-		return _source_id;
-	}
-	else
-	{
-		return _target_id;
-	}
+	return _target;
 }
 
-std::uint32_t edge::target_id(void) const
+void edge::source(const vertex* new_vertex)
 {
-	return _target_id;
+	_source = new_vertex;
 }
 
-std::uint32_t edge::target_id(const vertex& point_of_view) const
+void edge::target(const vertex* new_vertex)
 {
-	if( _target_id == point_of_view.id())
-	{
-		return _source_id;
-	}
-	else
-	{
-		return _target_id;
-	}
+	_target = new_vertex;
 }
 
-float edge::weight(void) const
+bool edge::twin_has(void) const
 {
-	return _weight;
+	return (_twin != nullptr);
 }
 
 bool edge::directed(void) const
 {
-	return _directed;
+	return twin_has();
 }
 
-edge edge::reverse_direction() const
+const edge* edge::twin(void) const
 {
-	edge edge_reversed(*this);
-	edge_reversed._source_id = this->_target_id;
-	edge_reversed._target_id = this->_source_id;
-	return edge_reversed;
+	return _twin;
 }
 
-bool edge::operator ==(const edge& rhs) const
+void edge::twin(const edge* new_twin)
 {
-	const bool equal =
-		(_source_id == rhs._source_id) &&
-		(_target_id == rhs._target_id) &&
-		(_weight == rhs._weight) &&
-		(_directed == rhs._directed);
-	return equal;
+	_twin = new_twin;
 }
 
-bool edge::operator !=(const edge& rhs) const
+bool edge::weight_has(void) const
 {
-	const bool not_equal = !(*this == rhs);
-	return not_equal;
+	return _has_weight;
+}
+
+float edge::weight(void) const
+{
+	assert(weight_has());
+	return _weight;
+}
+
+void edge::weight(const float new_weight)
+{
+	_has_weight = true;
+	_weight = new_weight;
+}
+
+std::size_t edge::get_hash(void) const
+{
+	return create_hash(this);
+}
+
+std::size_t edge::create_hash(const edge* e)
+{
+	std::stringstream ss;
+	std::hash<std::string> h;
+
+	if(e->source()->id() < e->target()->id())
+	{
+		ss << e->source()->id() << "-" << e->target()->id();
+	}
+	else
+	{
+		ss << e->target()->id() << "-" << e->source()->id();
+	}
+
+	const std::size_t hash = h(ss.str());
+
+	return hash;
 }
 
 }

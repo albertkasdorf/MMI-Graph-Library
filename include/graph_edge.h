@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <memory>
 
 namespace graph
 {
@@ -8,35 +9,38 @@ class vertex;
 class edge
 {
 private:
-	std::uint32_t _source_id;
-	std::uint32_t _target_id;
+	const vertex* _source;
+	const vertex* _target;
+	const edge* _twin;
+
+	bool _has_weight;
 	float _weight;
-	bool _directed;
 
 public:
-	edge(
-		const std::uint32_t source_id,
-		const std::uint32_t target_id,
-		const float weight = 0.f,
-		const bool directed = false);
-	edge(const edge&);
+	edge(void);
+	edge(const edge&) = delete;
 	~edge();
 
 public:
-	std::uint32_t source_id(void) const;
-	std::uint32_t source_id(const vertex&) const;
+	const vertex* source(void) const;
+	const vertex* target(void) const;
 
-	std::uint32_t target_id(void) const;
-	std::uint32_t target_id(const vertex&) const;
+	void source(const vertex*);
+	void target(const vertex*);
 
-	float weight(void) const;
+	bool twin_has(void) const;
 	bool directed(void) const;
+	const edge* twin(void) const;
+	void twin(const edge*);
 
-	edge reverse_direction() const;
+	bool weight_has(void) const;
+	float weight(void) const;
+	void weight(const float);
+
+	std::size_t get_hash(void) const;
 
 public:
-	bool operator ==(const edge& rhs) const;
-	bool operator !=(const edge& rhs) const;
+	static std::size_t create_hash(const edge*);
 };
 
 }

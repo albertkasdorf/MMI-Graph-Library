@@ -52,9 +52,9 @@ void practical_training::task00_debugging(void)
 	 * - edges_get(void) : iterator_pair<std::shared_ptr<const edge>>
 	 *
 	 * edge
-	 * - vertex_get(src/tgt) : std::shared_ptr<const vertex>
-	 * - twin_has() : bool
-	 * - twin_get() : std::shared_ptr<const edge>
+	 * + vertex_get(src/tgt) : std::shared_ptr<const vertex>
+	 * + twin_has() : bool
+	 * + twin_get() : std::shared_ptr<const edge>
 	 * - weight_get() : float
 	 * - weight_has() : bool
 	 *
@@ -70,6 +70,10 @@ void practical_training::task00_debugging(void)
 	graph::vertex* pv = v.get();
 	const graph::vertex* pcv = cv.get();
 	const graph::vertex& rpc = *cv;
+
+	//graph::edge* pbla = nullptr;
+	//graph::edge& rbla = *pbla;
+
 
 	std::hash<std::string> hasher;
 	auto h1 = hasher("");
@@ -91,6 +95,15 @@ void practical_training::task00_debugging(void)
 	ss << 45 << "-" << 67;
 	const std::string combined = ss.str();
 
+	graph::loader gl;
+	graph::graph gg_full, gg_res;
+	graph::algorithm ga;
+	const graph::vertex* gv_start;
+
+	gl.load(graph::files::Graph1, gg_full);
+
+	gv_start = gg_full.vertex_get(0);
+	ga.breadth_first_search(gg_full, *gv_start, gg_res);
 
 
 	return;
