@@ -150,51 +150,46 @@ void algorithm::connected_component(
 // Find the minimal spanning tree with the prim algorithm.
 //
 void algorithm::prim(
-	const graph* graph_full, const vertex* vertex_start, graph* graph_mst)
+	const graph* full_graph, const vertex* start_vertex, graph* mst_graph)
 {
 	std::priority_queue<const edge*, std::vector<const edge*>, compare_edge_weight> queue;
-	std::set<const vertex*, compare_vertex_id> vertices_visited;
+	std::set<const vertex*, compare_vertex_id> vertex_lookup;
 
-	vertices_visited.insert(vertex_start);
-
-	for(auto edge : vertex_start->get_edges())
+	for(auto edge : start_vertex->get_edges())
 	{
 		queue.push(edge);
 	}
+	vertex_lookup.insert(start_vertex);
 
 	while(!queue.empty())
 	{
-		const edge* edge_current = queue.top();
+		const edge* new_edge = queue.top();
 		queue.pop();
 
-		const vertex* vertex_source = edge_current->get_source();
-		const vertex* vertex_target = edge_current->get_target();
+		const vertex* source_vertex = new_edge->get_source();
+		const vertex* target_vertex = new_edge->get_target();
 
-		const bool source_visited = vertices_visited.count(vertex_source) != 0;
-		const bool target_visited = vertices_visited.count(vertex_target) != 0;
+		const bool source_found = vertex_lookup.count(source_vertex) != 0;
+		const bool target_found = vertex_lookup.count(target_vertex) != 0;
 
-		if(source_visited && target_visited)
+		assert(source_found || target_found);
+
+		if(source_found && target_found)
 		{
+			// Discard the edge, if both vertices processed.
 			continue;
 		}
 
-		graph_mst->add_edge(*edge_current);
-		if(!source_visited)
+		const vertex* add_vertex = source_found ? target_vertex : source_vertex;
+
+		// Add all edges to the queue from the "unprocessed" vertex.
+		vertex_lookup.insert(add_vertex);
+		for(auto edge : add_vertex->get_edges())
 		{
-			vertices_visited.insert(vertex_source);
-			for(auto edge : vertex_source->get_edges())
-			{
-				queue.push(edge);
-			}
+			queue.push(edge);
 		}
-		if(!target_visited)
-		{
-			vertices_visited.insert(vertex_target);
-			for(auto edge : vertex_target->get_edges())
-			{
-				queue.push(edge);
-			}
-		}
+
+		mst_graph->add_edge(new_edge);
 	}
 }
 
@@ -204,7 +199,9 @@ void algorithm::prim(
 void algorithm::kruskal(const graph* full_graph, graph* mst_graph)
 {
 	std::priority_queue<const edge*, std::vector<const edge*>, compare_edge_weight> queue;
+	// Quick lookup of the vertex component id.
 	std::map<const vertex*, std::size_t> vertex_lookup;
+	// Components groups of vertices
 	std::map<std::size_t, std::vector<const vertex*>> component_lookup;
 	std::size_t component_id = 0;
 
@@ -229,6 +226,9 @@ void algorithm::kruskal(const graph* full_graph, graph* mst_graph)
 
 		if(!source_found && !target_found)
 		{
+			//
+			// Add a standalone edge
+			//
 			vertex_lookup.insert(std::make_pair(source_vertex, component_id));
 			vertex_lookup.insert(std::make_pair(target_vertex, component_id));
 
@@ -241,26 +241,24 @@ void algorithm::kruskal(const graph* full_graph, graph* mst_graph)
 		}
 		else if(source_found != target_found)
 		{
-			if(source_found)
-			{
-				const std::size_t source_component_id = (*iter_source).second;
+			//
+			// Append a edge to a subgraph
+			//
+			const std::size_t add_component_id =
+				source_found ? (*iter_source).second : (*iter_target).second;
+			const vertex* add_vertex =
+				source_found ? target_vertex : source_vertex;
 
-				vertex_lookup.insert(
-					std::make_pair(target_vertex, source_component_id));
-				component_lookup[source_component_id].push_back(target_vertex);
-			}
-			else // if(target_found)
-			{
-				const std::size_t target_component_id = (*iter_target).second;
+			vertex_lookup.insert(std::make_pair(add_vertex, add_component_id));
+			component_lookup[add_component_id].push_back(add_vertex);
 
-				vertex_lookup.insert(
-					std::make_pair(source_vertex, target_component_id));
-				component_lookup[target_component_id].push_back(source_vertex);
-			}
 			mst_graph->add_edge(new_edge);
 		}
 		else // if(source_found && target_found)
 		{
+			//
+			// Merge two subgraphs if they have a different component id.
+			//
 			const std::size_t source_component_id = (*iter_source).second;
 			const std::size_t target_component_id = (*iter_target).second;
 
@@ -273,19 +271,13 @@ void algorithm::kruskal(const graph* full_graph, graph* mst_graph)
 			const std::size_t target_count =
 				component_lookup[target_component_id].size();
 
-			std::size_t from_component_id, to_component_id;
+			const std::size_t from_component_id =
+					(source_count < target_count) ? source_component_id : target_component_id;
+			const std::size_t to_component_id =
+					(source_count < target_count) ? target_component_id : source_component_id;
 
-			if(source_count < target_count)
-			{
-				from_component_id = source_component_id;
-				to_component_id = target_component_id;
-			}
-			else // if(source_count >= target_count)
-			{
-				from_component_id = target_component_id;
-				to_component_id = source_component_id;
-			}
-
+			// Override the old component_id in vertex_loop
+			// Add the vertices from the old component id group to the new one.
 			for(auto vertex : component_lookup[from_component_id])
 			{
 				vertex_lookup[vertex] = to_component_id;
@@ -296,7 +288,7 @@ void algorithm::kruskal(const graph* full_graph, graph* mst_graph)
 			mst_graph->add_edge(new_edge);
 		}
 	}
-	assert(component_lookup.size()==1);
+	assert(component_lookup.size() == 1);
 }
 
 }
