@@ -51,12 +51,7 @@ public:
 	//
 	// Find the minimal spanning tree with the kruskal algorithm.
 	//
-	void kruskal(const graph&, graph&);
-
-	//
-	// Detect if the graph has a cycle.
-	//
-	bool has_cycle(const graph&, const vertex&);
+	void kruskal(const graph*, graph*);
 
 private:
 	void depth_first_search_recursive(

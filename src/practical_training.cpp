@@ -151,20 +151,39 @@ void practical_training::task01_bfs_dfs(void)
 void practical_training::task02_prim_kruskal(void)
 {
 	graph::loader graph_loader;
-	graph::files graph_file = graph::files::G_100_200;
-	graph::graph g, t;
+	graph::files graph_file = graph::files::G_1_2;
+	graph::graph g, t_with_prim, t_with_kruskal;
 	graph::algorithm graph_algorithm;
-	const graph::vertex* start_vertex;
 	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+
+	std::cout << "Loading graph file: ";
+	std::cout << graph_loader.file_name_get(graph_file) << std::endl;
+	graph_loader.load(graph_file, g);
 
 	start = std::chrono::high_resolution_clock::now();
 	{
-		graph_loader.load(graph_file, g);
-		start_vertex = g.get_vertex(0);
-		graph_algorithm.prim(&g, start_vertex, &t);
-		//graph_algorithm.kruskal(g, t);
+		const graph::vertex* start_vertex = g.get_vertex(0);
+		graph_algorithm.prim(&g, start_vertex, &t_with_prim);
 	}
 	end = std::chrono::high_resolution_clock::now();
+
+	std::cout << "=== Prim ===" << std::endl;
+	std::cout << "Full graph<" << g.get_vertex_count() << "," << g.get_edge_count() << ">" << std::endl;
+	std::cout << "Mst  graph<" << t_with_prim.get_vertex_count() << "," << t_with_prim.get_edge_count() << ">" << std::endl;
+
+	std::cout << "Elapsed time: ";
+	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	std::cout << " ms" << std::endl;
+
+	start = std::chrono::high_resolution_clock::now();
+	{
+		graph_algorithm.kruskal(&g, &t_with_kruskal);
+	}
+	end = std::chrono::high_resolution_clock::now();
+
+	std::cout << "=== Kruskal ===" << std::endl;
+	std::cout << "Full graph<" << g.get_vertex_count() << "," << g.get_edge_count() << ">" << std::endl;
+	std::cout << "Mst  graph<" << t_with_kruskal.get_vertex_count() << "," << t_with_kruskal.get_edge_count() << ">" << std::endl;
 
 	std::cout << "Elapsed time: ";
 	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();

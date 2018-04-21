@@ -201,100 +201,102 @@ void algorithm::prim(
 //
 // Find the minimal spanning tree with the kruskal algorithm.
 //
-void algorithm::kruskal(const graph& graph_full, graph& graph_mst)
+void algorithm::kruskal(const graph* full_graph, graph* mst_graph)
 {
-//	std::priority_queue<edge, std::vector<edge>, compare_edge_weight> queue;
-//	std::size_t _count_cycle = 0, _count_remove = 0;
-//	std::chrono::time_point<std::chrono::high_resolution_clock>
-//		_start_cycle, _start_remove, _end_cycle, _end_remove;
-//	std::size_t _cycle = 0, _remove = 0;
+	std::priority_queue<const edge*, std::vector<const edge*>, compare_edge_weight> queue;
+	std::map<const vertex*, std::size_t> vertex_lookup;
+	std::map<std::size_t, std::vector<const vertex*>> component_lookup;
+	std::size_t component_id = 0;
 
-//	for(const edge& edge : graph_full.edge_get())
-//	{
-//		queue.push(edge);
-//	}
+	for(auto edge : full_graph->get_edges())
+	{
+		queue.push(edge);
+	}
 
-//	while(!queue.empty())
-//	{
-//		const edge edge_add = queue.top();
-//		queue.pop();
+	while(!queue.empty())
+	{
+		const edge* new_edge = queue.top();
+		queue.pop();
 
-//		graph_mst.add(edge_add);
+		const vertex* source_vertex = new_edge->get_source();
+		const vertex* target_vertex = new_edge->get_target();
 
-//		_start_cycle = std::chrono::high_resolution_clock::now();
-//		const bool graph_has_cycle =
-//			has_cycle(graph_mst, vertex(edge_add.source_id()));
-//		_end_cycle = std::chrono::high_resolution_clock::now();
-//		_cycle += std::chrono::duration_cast<std::chrono::milliseconds>(_end_cycle - _start_cycle).count();
-//		_count_cycle++;
+		auto iter_source = vertex_lookup.find(source_vertex);
+		auto iter_target = vertex_lookup.find(target_vertex);
 
-//		if(graph_has_cycle)
-//		{
-//			_start_remove = std::chrono::high_resolution_clock::now();
-//			graph_mst.remove(edge_add);
-//			_end_remove = std::chrono::high_resolution_clock::now();
-//			_remove += std::chrono::duration_cast<std::chrono::milliseconds>(_end_remove - _start_remove).count();
-//			_count_remove++;
-//		}
+		const bool source_found = iter_source != vertex_lookup.end();
+		const bool target_found = iter_target != vertex_lookup.end();
 
-//		continue;
-//	}
+		if(!source_found && !target_found)
+		{
+			vertex_lookup.insert(std::make_pair(source_vertex, component_id));
+			vertex_lookup.insert(std::make_pair(target_vertex, component_id));
 
-//	return;
+			component_lookup[component_id].push_back(source_vertex);
+			component_lookup[component_id].push_back(target_vertex);
+
+			mst_graph->add_edge(new_edge);
+
+			++component_id;
+		}
+		else if(source_found != target_found)
+		{
+			if(source_found)
+			{
+				const std::size_t source_component_id = (*iter_source).second;
+
+				vertex_lookup.insert(
+					std::make_pair(target_vertex, source_component_id));
+				component_lookup[source_component_id].push_back(target_vertex);
+			}
+			else // if(target_found)
+			{
+				const std::size_t target_component_id = (*iter_target).second;
+
+				vertex_lookup.insert(
+					std::make_pair(source_vertex, target_component_id));
+				component_lookup[target_component_id].push_back(source_vertex);
+			}
+			mst_graph->add_edge(new_edge);
+		}
+		else // if(source_found && target_found)
+		{
+			const std::size_t source_component_id = (*iter_source).second;
+			const std::size_t target_component_id = (*iter_target).second;
+
+			// Cycle test
+			if(source_component_id == target_component_id)
+				continue;
+
+			const std::size_t source_count =
+				component_lookup[source_component_id].size();
+			const std::size_t target_count =
+				component_lookup[target_component_id].size();
+
+			std::size_t from_component_id, to_component_id;
+
+			if(source_count < target_count)
+			{
+				from_component_id = source_component_id;
+				to_component_id = target_component_id;
+			}
+			else // if(source_count >= target_count)
+			{
+				from_component_id = target_component_id;
+				to_component_id = source_component_id;
+			}
+
+			for(auto vertex : component_lookup[from_component_id])
+			{
+				vertex_lookup[vertex] = to_component_id;
+				component_lookup[to_component_id].push_back(vertex);
+			}
+			component_lookup.erase(from_component_id);
+
+			mst_graph->add_edge(new_edge);
+		}
+	}
+	assert(component_lookup.size()==1);
 }
-
-bool algorithm::has_cycle(const graph& graph_full, const vertex& vertex_start)
-{
-//	std::set<vertex, compare_vertex_id> vertices_visited;
-//	std::set<edge, compare_edge_ids> edges_visited;
-//	std::stack<edge> stack;
-
-//	vertices_visited.insert(vertex_start);
-//	for(const edge edge : graph_full.edge_get(vertex_start))
-//	{
-//		stack.push(edge);
-//	}
-
-//	while(!stack.empty())
-//	{
-//		edge edge_current = stack.top();
-//		stack.pop();
-
-//		edges_visited.insert(edge_current);
-//		edges_visited.insert(edge_current.reverse_direction());
-
-//		const vertex vertex_source = vertex(edge_current.source_id());
-//		const vertex vertex_target = vertex(edge_current.target_id());
-
-//		const bool source_visited = vertices_visited.count(vertex_source) != 0;
-//		const bool target_visited = vertices_visited.count(vertex_target) != 0;
-
-//		if(source_visited && target_visited)
-//		{
-//			return true;
-//		}
-
-//		const vertex* vertex_next = nullptr;
-
-//		if(!source_visited)
-//			vertex_next = &vertex_source;
-//		else if(!target_visited)
-//			vertex_next = &vertex_target;
-//		else
-//			assert(false);
-
-//		vertices_visited.insert(*vertex_next);
-//		for(const edge edge_next : graph_full.edge_get(*vertex_next))
-//		{
-//			if(edges_visited.count(edge_next) != 0)
-//				continue;
-
-//			stack.push(edge_next);
-//		}
-//	}
-
-//	return false;
-}
-
 
 }

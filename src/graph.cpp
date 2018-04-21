@@ -72,6 +72,11 @@ std::uint32_t graph::get_vertex_count(void) const
 //	return edge_all;
 //}
 
+void graph::add_edge(const edge* new_edge)
+{
+	add_edge(*new_edge);
+}
+
 void graph::add_edge(const edge& new_edge)
 {
 	// TODO: Check TWIN condition
@@ -207,6 +212,18 @@ void graph::remove_edge(const edge& edge_remove)
 //		edges.erase(i);
 //		break;
 //	}
+}
+
+std::pair<edge_iterator_on_multimap, edge_iterator_on_multimap> graph::get_edges(void) const
+{
+	return std::make_pair(
+		edge_iterator_on_multimap(edges2.cbegin()),
+		edge_iterator_on_multimap(edges2.cend()));
+}
+
+std::uint32_t graph::get_edge_count(void) const
+{
+	return edges2.size();
 }
 
 

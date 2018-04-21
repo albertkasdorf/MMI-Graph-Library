@@ -34,6 +34,7 @@ public:
 	// Remark:
 	// - Vertices created if they not exist in graph.
 	//
+	void add_edge(const edge*);
 	void add_edge(const edge&);
 	void add_undirected_edge(
 		const uint32_t&, const uint32_t&);
@@ -41,6 +42,11 @@ public:
 		const uint32_t&, const uint32_t&, const float&);
 	void add_undirected_edge(
 		const uint32_t&, const uint32_t&, const float*);
+
+	//
+	// Get all edges of the graph.
+	//
+	std::pair<edge_iterator_on_multimap, edge_iterator_on_multimap> get_edges(void) const;
 
 
 	//
@@ -65,6 +71,11 @@ public:
 	// Return all vertices of the graph.
 	//
 	std::pair<vertex_iterator, vertex_iterator> get_vertices(void) const;
+
+	//
+	// Returns the number of edges.
+	//
+	std::uint32_t get_edge_count(void) const;
 
 
 
