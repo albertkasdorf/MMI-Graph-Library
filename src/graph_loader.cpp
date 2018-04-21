@@ -78,7 +78,7 @@ void loader::load_adjacent_matrix(const std::string& file_name, graph& graph)
 
 	// create vertices
 	for(std::uint32_t i = 0; i < vertex_count; ++i)
-		graph.vertex_add(i);
+		graph.add_vertex(i);
 
 	// create edges
 	for(auto row = 0; row < vertex_count; row++)
@@ -90,12 +90,12 @@ void loader::load_adjacent_matrix(const std::string& file_name, graph& graph)
 			fs >> adjacent;
 			if(adjacent && col >= row)
 			{
-				graph.edge_undirected_add(row, col);
+				graph.add_undirected_edge(row, col);
 			}
 		}
 	}
 
-	assert(graph.vertex_count_get() == vertex_count);
+	assert(graph.get_vertex_count() == vertex_count);
 }
 
 void loader::load_edge_list(
@@ -109,7 +109,7 @@ void loader::load_edge_list(
 
 	// create vertices
 	for(std::uint32_t i = 0; i < vertex_count; ++i)
-		graph.vertex_add(i);
+		graph.add_vertex(i);
 
 	// create edges
 	while(true)
@@ -120,10 +120,10 @@ void loader::load_edge_list(
 		if(fs.eof())
 			break;
 
-		graph.edge_undirected_add(source_id, target_id);
+		graph.add_undirected_edge(source_id, target_id);
 	}
 
-	assert(graph.vertex_count_get() == vertex_count);
+	assert(graph.get_vertex_count() == vertex_count);
 }
 
 void loader::load_edge_list_weighted(
@@ -137,7 +137,7 @@ void loader::load_edge_list_weighted(
 
 	// create vertices
 	for(std::uint32_t i = 0; i < vertex_count; ++i)
-		graph.vertex_add(i);
+		graph.add_vertex(i);
 
 	// create edges
 	while(true)
@@ -149,10 +149,10 @@ void loader::load_edge_list_weighted(
 		if(fs.eof())
 			break;
 
-		graph.edge_undirected_add(source_id, target_id, weight);
+		graph.add_undirected_edge(source_id, target_id, weight);
 	}
 
-	assert(graph.vertex_count_get() == vertex_count);
+	assert(graph.get_vertex_count() == vertex_count);
 }
 
 }

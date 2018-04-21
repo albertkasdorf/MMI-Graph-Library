@@ -20,10 +20,6 @@ public:
 	~graph();
 
 private:
-	std::map<std::uint32_t, vertex*> vertices;
-	std::vector<edge*> edges;
-	std::map<std::uint32_t, std::map<std::uint32_t, std::vector<edge*>>> edges_map;
-
 	std::map<std::size_t, std::shared_ptr<vertex>> vertices2;
 	std::multimap<std::size_t, std::shared_ptr<edge>> edges2;
 
@@ -31,19 +27,19 @@ public:
 	//
 	// Add a vertex to the graph.
 	//
-	void vertex_add(const uint32_t);
+	void add_vertex(const uint32_t);
 
 	//
 	// Add a new edge to the graph.
 	// Remark:
 	// - Vertices created if they not exist in graph.
 	//
-	void edge_add(const edge&);
-	void edge_undirected_add(
+	void add_edge(const edge&);
+	void add_undirected_edge(
 		const uint32_t&, const uint32_t&);
-	void edge_undirected_add(
+	void add_undirected_edge(
 		const uint32_t&, const uint32_t&, const float&);
-	void edge_undirected_add(
+	void add_undirected_edge(
 		const uint32_t&, const uint32_t&, const float*);
 
 
@@ -52,7 +48,7 @@ public:
 	// Remark:
 	// - Unconnected vertices are not removed.
 	//
-	void remove(const edge&);
+	void remove_edge(const edge&);
 
 
 
@@ -60,27 +56,22 @@ public:
 	//
 	// Return a copy of the vertex with the provided vertex id.
 	//
-	const vertex* vertex_get(const std::uint32_t) const;
-
-
+	const vertex* get_vertex(const std::uint32_t) const;
 	//
 	// Return the number of vertices.
 	//
-	std::uint32_t vertex_count_get(void) const;
-
-	vertex_iterator vertices_begin() const;
-	vertex_iterator vertices_end() const;
-
-
-
+	std::uint32_t get_vertex_count(void) const;
 	//
-	// Return the edges of a given vertex.
+	// Return all vertices of the graph.
 	//
-	const std::vector<edge> edge_get(const vertex&) const;
-	std::vector<edge> edge_get(void) const;
+	std::pair<vertex_iterator, vertex_iterator> get_vertices(void) const;
+
+
+
+
 
 private:
-	vertex* vertex_get_internal(const std::uint32_t) const;
+	vertex* get_vertex_internal(const std::uint32_t) const;
 };
 
 }

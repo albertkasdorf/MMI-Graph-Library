@@ -22,20 +22,20 @@ public:
 	~edge();
 
 public:
-	const vertex* source(void) const;
-	const vertex* target(void) const;
+	const vertex* get_source(void) const;
+	const vertex* get_target(void) const;
 
-	void source(const vertex*);
-	void target(const vertex*);
+	void set_source(const vertex*);
+	void set_target(const vertex*);
 
-	bool twin_has(void) const;
-	bool directed(void) const;
-	const edge* twin(void) const;
-	void twin(const edge*);
+	bool has_twin(void) const;
+	bool is_directed(void) const;
+	const edge* get_twin(void) const;
+	void set_twin(const edge*);
 
-	bool weight_has(void) const;
-	float weight(void) const;
-	void weight(const float);
+	bool has_weight(void) const;
+	float get_weight(void) const;
+	void set_weight(const float);
 
 	std::size_t get_hash(void) const;
 

@@ -29,15 +29,15 @@ public:
 	//
 	// Returns the id of this vertex.
 	//
-	uint32_t id(void) const;
+	uint32_t get_id(void) const;
 	//
 	// Changes the id of this vertex.
 	//
-	void id(uint32_t);
+	void set_id(uint32_t);
 	//
 	// Add a new edge to this vertex.
 	//
-	void add(const edge*);
+	void add_edge(const edge*);
 	//
 	// Add a directed edge that points to this vertex.
 	//
@@ -45,7 +45,7 @@ public:
 	//
 	// Remove an edge from this vertex.
 	//
-	void remove(const edge*);
+	void remove_edge(const edge*);
 	//
 	// Remove a directed edge that points to this vertex.
 	//
@@ -58,7 +58,7 @@ public:
 	// Returns the begin/end iterator to the directed edges that points to this
 	// vertex.
 	//
-	void pointing_edges(void) const;
+	void get_pointing_edges(void) const;
 
 public:
 	static std::size_t create_hash(const uint32_t);

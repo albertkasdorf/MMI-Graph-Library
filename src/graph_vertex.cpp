@@ -12,7 +12,7 @@ vertex::vertex(const uint32_t id) :
 
 // TODO: Do I really need a copy ctor?
 vertex::vertex(const vertex& rhs) :
-	_id(rhs.id())
+	_id(rhs.get_id())
 	, _edges(rhs._edges)
 	, _pointing_edges(rhs._pointing_edges)
 {
@@ -22,17 +22,17 @@ vertex::~vertex()
 {
 }
 
-uint32_t vertex::id(void) const
+uint32_t vertex::get_id(void) const
 {
 	return _id;
 }
 
-void vertex::id(uint32_t id)
+void vertex::set_id(uint32_t id)
 {
 	_id = id;
 }
 
-void vertex::add(const edge* new_edge)
+void vertex::add_edge(const edge* new_edge)
 {
 	_edges.push_back(new_edge);
 }
@@ -57,7 +57,7 @@ std::size_t vertex::create_hash(const std::uint32_t id)
 
 std::size_t vertex::create_hash(const vertex& v)
 {
-	return create_hash(v.id());
+	return create_hash(v.get_id());
 }
 
 

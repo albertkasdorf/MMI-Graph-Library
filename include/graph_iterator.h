@@ -2,6 +2,7 @@
 #include <iterator>
 #include <map>
 #include <vector>
+#include <memory>
 
 namespace graph
 {
@@ -14,7 +15,7 @@ class edge;
 class vertex_iterator
 {
 private:
-	std::map<std::uint32_t, vertex*>::const_iterator iter;
+	std::map<std::size_t, std::shared_ptr<vertex>>::const_iterator iter;
 
 public:
 	// Iterator traits, previously from std::iterator.
@@ -26,20 +27,20 @@ public:
 
 	// Default constructible.
 	vertex_iterator() = default;
-	explicit vertex_iterator(std::map<std::uint32_t, vertex*>::const_iterator iter);
+	explicit vertex_iterator(
+		std::map<std::size_t, std::shared_ptr<vertex>>::const_iterator);
 
 	// Dereferencable.
-	reference operator*() const;
+	pointer operator*() const;
 
 	// Pre- and post-incrementable.
 	vertex_iterator& operator++();
 	vertex_iterator operator++(int);
 
 	// Equality / inequality.
-	bool operator==(const vertex_iterator& rhs);
-	bool operator!=(const vertex_iterator& rhs);
+	bool operator==(const vertex_iterator&);
+	bool operator!=(const vertex_iterator&);
 };
-
 
 class edge_iterator
 {
@@ -69,5 +70,12 @@ public:
 	bool operator==(const edge_iterator& rhs);
 	bool operator!=(const edge_iterator& rhs);
 };
+
+
+template<typename T>
+T begin(std::pair<T,T>& iter_pair) { return iter_pair.first; }
+
+template<typename T>
+T end(std::pair<T,T>& iter_pair) { return iter_pair.second; }
 
 }

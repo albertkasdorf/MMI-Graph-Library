@@ -6,7 +6,7 @@ int main()
 	{
 		pt.task00_debugging();
 		//pt.task01_bfs_dfs();
-		//pt.task02_prim_kruskal();
+		pt.task02_prim_kruskal();
 	}
 	return 0;
 }

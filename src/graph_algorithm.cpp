@@ -25,26 +25,24 @@ algorithm::~algorithm()
 }
 
 void algorithm::breadth_first_search(
-	const graph& graph_full,
-	const vertex& start_vertex,
-	graph& graph_sub)
+	const graph* graph_full,
+	const vertex* start_vertex,
+	graph* graph_sub)
 {
 	std::deque<const vertex*> processing_queue;
 	std::set<const vertex*, compare_vertex_id> vertex_lookup;
 
-	processing_queue.push_back(&start_vertex);
-	vertex_lookup.insert(&start_vertex);
+	processing_queue.push_back(start_vertex);
+	vertex_lookup.insert(start_vertex);
 
 	while(!processing_queue.empty())
 	{
 		const vertex* vertex_current = processing_queue.front();
 		processing_queue.pop_front();
 
-		auto iter_pair = vertex_current->get_edges();
-		for(auto iter = iter_pair.first; iter != iter_pair.second; ++iter)
+		for(auto current_edge : vertex_current->get_edges())
 		{
-			const edge* current_edge = (*iter);
-			const vertex* target_vertex = current_edge->target();
+			const vertex* target_vertex = current_edge->get_target();
 
 			const bool vertex_processed = vertex_lookup.count(target_vertex) != 0;
 			if(vertex_processed)
@@ -53,7 +51,7 @@ void algorithm::breadth_first_search(
 			processing_queue.push_back(target_vertex);
 			vertex_lookup.insert(target_vertex);
 
-			graph_sub.edge_add(*(*iter));
+			graph_sub->add_edge(*current_edge);
 
 			continue;
 		}
@@ -62,148 +60,142 @@ void algorithm::breadth_first_search(
 }
 
 void algorithm::depth_first_search(
-	const graph& graph_full,
-	const vertex& vertex_start,
-	graph& graph_sub)
+	const graph* graph_full,
+	const vertex* vertex_start,
+	graph* graph_sub)
 {
-//	std::set<vertex, compare_vertex_id> lookup;
+	std::set<const vertex*, compare_vertex_id> lookup;
 
-//	depth_first_search_recursive(graph_full, vertex_start, lookup, graph_sub);
+	depth_first_search_recursive(graph_full, vertex_start, &lookup, graph_sub);
 }
 
 void algorithm::depth_first_search_recursive(
-	const graph& graph_full,
-	const vertex& vertex_to_expand,
-	std::set<vertex, compare_vertex_id>& lookup,
-	graph& graph_sub )
+	const graph* graph_full,
+	const vertex* vertex_to_expand,
+	std::set<const vertex*, compare_vertex_id>* lookup,
+	graph* graph_sub )
 {
-//	lookup.insert(vertex_to_expand);
+	lookup->insert(vertex_to_expand);
 
-//	for(auto edge : graph_full.edge_get(vertex_to_expand))
-//	{
-//		const std::uint32_t target_id = edge.target_id(vertex_to_expand);
-//		const vertex vertex_adjacent = graph_full.vertex_get(target_id);
-//		const bool vertex_found = lookup.count(vertex_adjacent);
+	for(auto current_edge : vertex_to_expand->get_edges())
+	{
+		const vertex* next_vertex = current_edge->get_target();
+		const bool next_vertex_found = lookup->count(next_vertex);
 
-//		if(vertex_found)
-//			continue;
+		if(next_vertex_found)
+			continue;
 
-//		graph_sub.add(edge);
-//		depth_first_search_recursive(graph_full, vertex_adjacent, lookup, graph_sub);
-//	}
+		graph_sub->add_edge(*current_edge);
+		depth_first_search_recursive(graph_full, next_vertex, lookup, graph_sub);
+	}
 }
 
 void algorithm::connected_component_with_bfs(
-	const graph& graph_full,
-	std::vector<std::shared_ptr<graph>>& subgraphs)
+	const graph* graph_full,
+	std::vector<std::shared_ptr<graph>>* subgraphs)
 {
-//	connected_component(
-//		graph_full,
-//		subgraphs,
-//		std::bind(&algorithm::breadth_first_search,
-//			this,
-//			std::placeholders::_1,
-//			std::placeholders::_2,
-//			std::placeholders::_3));
+	connected_component(
+		graph_full,
+		subgraphs,
+		std::bind(&algorithm::breadth_first_search,
+			this,
+			std::placeholders::_1,
+			std::placeholders::_2,
+			std::placeholders::_3));
 }
 
 void algorithm::connected_component_with_dfs(
-	const graph& graph_full,
-	std::vector<std::shared_ptr<graph>>& subgraphs)
+	const graph* graph_full,
+	std::vector<std::shared_ptr<graph>>* subgraphs)
 {
-//	connected_component(
-//		graph_full,
-//		subgraphs,
-//		std::bind(&algorithm::depth_first_search,
-//			this,
-//			std::placeholders::_1,
-//			std::placeholders::_2,
-//			std::placeholders::_3));
+	connected_component(
+		graph_full,
+		subgraphs,
+		std::bind(&algorithm::depth_first_search,
+			this,
+			std::placeholders::_1,
+			std::placeholders::_2,
+			std::placeholders::_3));
 }
 
 void algorithm::connected_component(
-	const graph& graph_full,
-	std::vector<std::shared_ptr<graph>>& subgraphs,
-	const std::function<void(const graph&, const vertex&, graph&)>& search_algorithm )
+	const graph* graph_full,
+	std::vector<std::shared_ptr<graph>>* subgraphs,
+	const std::function<void(const graph*, const vertex*, graph*)>& search_algorithm )
 {
-//	std::set<vertex, compare_vertex_id> lookup;
+	std::set<const vertex*, compare_vertex_id> lookup;
 
-//	for(vertex_iterator vi_graph_full = graph_full.vertices_begin();
-//		vi_graph_full != graph_full.vertices_end();
-//		++vi_graph_full)
-//	{
-//		const vertex vertex_current = (*vi_graph_full);
+	for(auto vertex_current : graph_full->get_vertices())
+	{
+		const bool vertex_found = lookup.count(vertex_current) != 0;
 
-//		const bool vertex_found = lookup.count(vertex_current) != 0;
-//		if(vertex_found)
-//			continue;
+		if(vertex_found)
+			continue;
 
-//		std::shared_ptr<graph> graph_sub = std::make_shared<graph>();
+		std::shared_ptr<graph> graph_sub = std::make_shared<graph>();
 
-//		search_algorithm(graph_full, vertex_current, *graph_sub);
+		search_algorithm(graph_full, vertex_current, graph_sub.get());
 
-//		for(vertex_iterator vi_graph_sub = graph_sub->vertices_begin();
-//			vi_graph_sub != graph_sub->vertices_end();
-//			++vi_graph_sub)
-//		{
-//			const vertex vertex_from_sub_graph = *vi_graph_sub;
-//			lookup.insert(vertex_from_sub_graph);
-//		}
+		for(auto vertex_from_sub_graph : graph_sub->get_vertices())
+		{
+			lookup.insert(vertex_from_sub_graph);
+		}
 
-//		subgraphs.push_back(graph_sub);
-//		continue;
-//	}
+		subgraphs->push_back(graph_sub);
+		continue;
+	}
 }
 
 //
 // Find the minimal spanning tree with the prim algorithm.
 //
 void algorithm::prim(
-	const graph& graph_full, const vertex& vertex_start, graph& graph_mst)
+	const graph* graph_full, const vertex* vertex_start, graph* graph_mst)
 {
-//	std::priority_queue<edge, std::vector<edge>, compare_edge_weight> queue;
-//	std::set<vertex, compare_vertex_id> vertices_visited;
+	std::priority_queue<const edge*, std::vector<const edge*>, compare_edge_weight> queue;
+	std::set<const vertex*, compare_vertex_id> vertices_visited;
 
-//	vertices_visited.insert(vertex_start);
-//	for(const edge edge : graph_full.edge_get(vertex_start))
-//	{
-//		queue.push(edge);
-//	}
+	vertices_visited.insert(vertex_start);
 
-//	while(!queue.empty())
-//	{
-//		edge edge_current = queue.top();
-//		queue.pop();
+	for(auto edge : vertex_start->get_edges())
+	{
+		queue.push(edge);
+	}
 
-//		const vertex vertex_source = vertex(edge_current.source_id());
-//		const vertex vertex_target = vertex(edge_current.target_id());
+	while(!queue.empty())
+	{
+		const edge* edge_current = queue.top();
+		queue.pop();
 
-//		const bool source_visited = vertices_visited.count(vertex_source) != 0;
-//		const bool target_visited = vertices_visited.count(vertex_target) != 0;
+		const vertex* vertex_source = edge_current->get_source();
+		const vertex* vertex_target = edge_current->get_target();
 
-//		if(source_visited && target_visited)
-//		{
-//			continue;
-//		}
+		const bool source_visited = vertices_visited.count(vertex_source) != 0;
+		const bool target_visited = vertices_visited.count(vertex_target) != 0;
 
-//		graph_mst.add(edge_current);
-//		if(!source_visited)
-//		{
-//			vertices_visited.insert(vertex_source);
-//			for(const edge edge : graph_full.edge_get(vertex_source))
-//			{
-//				queue.push(edge);
-//			}
-//		}
-//		if(!target_visited)
-//		{
-//			vertices_visited.insert(vertex_target);
-//			for(const edge edge : graph_full.edge_get(vertex_target))
-//			{
-//				queue.push(edge);
-//			}
-//		}
-//	}
+		if(source_visited && target_visited)
+		{
+			continue;
+		}
+
+		graph_mst->add_edge(*edge_current);
+		if(!source_visited)
+		{
+			vertices_visited.insert(vertex_source);
+			for(auto edge : vertex_source->get_edges())
+			{
+				queue.push(edge);
+			}
+		}
+		if(!target_visited)
+		{
+			vertices_visited.insert(vertex_target);
+			for(auto edge : vertex_target->get_edges())
+			{
+				queue.push(edge);
+			}
+		}
+	}
 }
 
 //

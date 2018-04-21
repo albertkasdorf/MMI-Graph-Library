@@ -6,15 +6,15 @@ namespace graph
 {
 
 vertex_iterator::vertex_iterator(
-	std::map<std::uint32_t, vertex*>::const_iterator iter)
+	std::map<std::size_t, std::shared_ptr<vertex>>::const_iterator iter)
 	:
 	iter(iter)
 {
 }
 
-vertex_iterator::reference vertex_iterator::operator*() const
+vertex_iterator::pointer vertex_iterator::operator*() const
 {
-	return *((*iter).second);
+	return (*iter).second.get();
 }
 
 vertex_iterator& vertex_iterator::operator++()
@@ -41,7 +41,6 @@ bool vertex_iterator::operator!=(const vertex_iterator& rhs)
 {
 	return iter != rhs.iter;
 }
-
 
 
 edge_iterator::edge_iterator(

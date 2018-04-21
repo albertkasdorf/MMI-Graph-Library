@@ -66,7 +66,7 @@ void practical_training::task00_debugging(void)
 
 	std::shared_ptr<graph::vertex> v = std::make_shared<graph::vertex>(8045);
 	std::shared_ptr<const graph::vertex> cv = v;
-	v->id(45);
+	v->set_id(45);
 	graph::vertex* pv = v.get();
 	const graph::vertex* pcv = cv.get();
 	const graph::vertex& rpc = *cv;
@@ -96,14 +96,15 @@ void practical_training::task00_debugging(void)
 	const std::string combined = ss.str();
 
 	graph::loader gl;
-	graph::graph gg_full, gg_res;
+	graph::graph gg_full, gg_res_bfs, gg_res_dfs;
 	graph::algorithm ga;
 	const graph::vertex* gv_start;
 
 	gl.load(graph::files::Graph1, gg_full);
 
-	gv_start = gg_full.vertex_get(0);
-	ga.breadth_first_search(gg_full, *gv_start, gg_res);
+	gv_start = gg_full.get_vertex(0);
+	ga.breadth_first_search(&gg_full, gv_start, &gg_res_bfs);
+	ga.depth_first_search(&gg_full, gv_start, &gg_res_dfs);
 
 
 	return;
@@ -116,33 +117,52 @@ void practical_training::task01_bfs_dfs(void)
 	graph::graph g;
 	graph::algorithm ga;
 	std::vector<std::shared_ptr<graph::graph>> subgraphs_bfs, subgraphs_dfs;
+	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
 
 	std::cout << "Loading graph file: ";
 	std::cout << graph_loader.file_name_get(graph_file) << std::endl;
 	graph_loader.load(graph_file, g);
 
-	ga.connected_component_with_bfs(g, subgraphs_bfs);
-	std::cout << "Connected components found with bfs: ";
-	std::cout << subgraphs_bfs.size() << std::endl;
+	start = std::chrono::high_resolution_clock::now();
+	{
+		ga.connected_component_with_bfs(&g, &subgraphs_bfs);
+		std::cout << "Connected components found with bfs: ";
+		std::cout << subgraphs_bfs.size() << std::endl;
+	}
+	end = std::chrono::high_resolution_clock::now();
 
-	ga.connected_component_with_dfs(g, subgraphs_dfs);
-	std::cout << "Connected components found with dfs: ";
-	std::cout << subgraphs_dfs.size() << std::endl;
+	std::cout << "Elapsed time: ";
+	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	std::cout << " ms" << std::endl;
+
+	start = std::chrono::high_resolution_clock::now();
+	{
+		ga.connected_component_with_dfs(&g, &subgraphs_dfs);
+		std::cout << "Connected components found with dfs: ";
+		std::cout << subgraphs_dfs.size() << std::endl;
+	}
+	end = std::chrono::high_resolution_clock::now();
+
+	std::cout << "Elapsed time: ";
+	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	std::cout << " ms" << std::endl;
 }
 
 void practical_training::task02_prim_kruskal(void)
 {
 	graph::loader graph_loader;
-	graph::files graph_file = graph::files::G_1_20;
+	graph::files graph_file = graph::files::G_100_200;
 	graph::graph g, t;
 	graph::algorithm graph_algorithm;
+	const graph::vertex* start_vertex;
 	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
 
 	start = std::chrono::high_resolution_clock::now();
 	{
 		graph_loader.load(graph_file, g);
-		//graph_algorithm.prim(g, graph::vertex(0), t);
-		graph_algorithm.kruskal(g, t);
+		start_vertex = g.get_vertex(0);
+		graph_algorithm.prim(&g, start_vertex, &t);
+		//graph_algorithm.kruskal(g, t);
 	}
 	end = std::chrono::high_resolution_clock::now();
 
