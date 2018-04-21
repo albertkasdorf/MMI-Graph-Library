@@ -5,6 +5,8 @@
 namespace graph
 {
 
+//------------------------------------------------------------------------------
+
 vertex_iterator::vertex_iterator(
 	std::map<std::size_t, std::shared_ptr<vertex>>::const_iterator iter)
 	:
@@ -117,5 +119,7 @@ bool edge_iterator_on_multimap::operator!=(const edge_iterator_on_multimap& rhs)
 {
 	return iter != rhs.iter;
 }
+
+//------------------------------------------------------------------------------
 
 }

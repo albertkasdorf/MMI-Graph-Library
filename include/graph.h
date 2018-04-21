@@ -20,8 +20,8 @@ public:
 	~graph();
 
 private:
-	std::map<std::size_t, std::shared_ptr<vertex>> vertices2;
-	std::multimap<std::size_t, std::shared_ptr<edge>> edges2;
+	std::map<std::size_t, std::shared_ptr<vertex>> vertices;
+	std::multimap<std::size_t, std::shared_ptr<edge>> edges;
 
 public:
 	//
@@ -35,7 +35,7 @@ public:
 	// - Vertices created if they not exist in graph.
 	//
 	void add_edge(const edge*);
-	void add_edge(const edge&);
+	//void add_edge(const edge&);
 	void add_undirected_edge(
 		const uint32_t&, const uint32_t&);
 	void add_undirected_edge(

@@ -18,10 +18,10 @@ graph::~graph()
 void graph::add_vertex(const uint32_t id)
 {
 	const std::size_t hash = vertex::create_hash(id);
-	const bool vertex_not_found = vertices2.count(hash) == 0;
+	const bool vertex_not_found = vertices.count(hash) == 0;
 	if(vertex_not_found)
 	{
-		vertices2[hash] = std::make_shared<vertex>(id);
+		vertices[hash] = std::make_shared<vertex>(id);
 	}
 }
 
@@ -33,13 +33,13 @@ const vertex* graph::get_vertex(const std::uint32_t id) const
 vertex* graph::get_vertex_internal(const std::uint32_t id) const
 {
 	const std::size_t hash = vertex::create_hash(id);
-	auto iter = vertices2.find(hash);
+	auto iter = vertices.find(hash);
 	return (iter->second).get();
 }
 
 std::uint32_t graph::get_vertex_count(void) const
 {
-	return vertices2.size();
+	return vertices.size();
 }
 
 //const std::vector<edge> graph::edge_get(const vertex& vertex) const
@@ -74,23 +74,35 @@ std::uint32_t graph::get_vertex_count(void) const
 
 void graph::add_edge(const edge* new_edge)
 {
-	add_edge(*new_edge);
-}
-
-void graph::add_edge(const edge& new_edge)
-{
 	// TODO: Check TWIN condition
-
-	if(new_edge.has_weight())
+	if(new_edge->has_weight())
 	{
 		add_undirected_edge(
-			new_edge.get_source()->get_id(), new_edge.get_target()->get_id(), new_edge.get_weight());
+			new_edge->get_source()->get_id(),
+			new_edge->get_target()->get_id(),
+			new_edge->get_weight());
 	}
 	else
 	{
-		add_undirected_edge( new_edge.get_source()->get_id(), new_edge.get_target()->get_id());
+		add_undirected_edge(
+			new_edge->get_source()->get_id(), new_edge->get_target()->get_id());
 	}
 }
+
+//void graph::add_edge(const edge& new_edge)
+//{
+//	// TODO: Check TWIN condition
+
+//	if(new_edge.has_weight())
+//	{
+//		add_undirected_edge(
+//			new_edge.get_source()->get_id(), new_edge.get_target()->get_id(), new_edge.get_weight());
+//	}
+//	else
+//	{
+//		add_undirected_edge( new_edge.get_source()->get_id(), new_edge.get_target()->get_id());
+//	}
+//}
 
 void graph::add_undirected_edge(
 	const uint32_t& source_id, const uint32_t& target_id)
@@ -138,16 +150,16 @@ void graph::add_undirected_edge(
 	const std::size_t hash_src_edge = src_edge->get_hash();
 	const std::size_t hash_tgt_edge = tgt_edge->get_hash();
 
-	edges2.insert(std::make_pair(hash_src_edge, src_edge));
-	edges2.insert(std::make_pair(hash_tgt_edge, tgt_edge));
+	edges.insert(std::make_pair(hash_src_edge, src_edge));
+	edges.insert(std::make_pair(hash_tgt_edge, tgt_edge));
 }
 
 
 std::pair<vertex_iterator, vertex_iterator> graph::get_vertices(void) const
 {
 	return std::make_pair(
-		vertex_iterator(vertices2.cbegin()),
-		vertex_iterator(vertices2.end()));
+		vertex_iterator(vertices.cbegin()),
+		vertex_iterator(vertices.end()));
 }
 
 void graph::remove_edge(const edge& edge_remove)
@@ -217,13 +229,13 @@ void graph::remove_edge(const edge& edge_remove)
 std::pair<edge_iterator_on_multimap, edge_iterator_on_multimap> graph::get_edges(void) const
 {
 	return std::make_pair(
-		edge_iterator_on_multimap(edges2.cbegin()),
-		edge_iterator_on_multimap(edges2.cend()));
+		edge_iterator_on_multimap(edges.cbegin()),
+		edge_iterator_on_multimap(edges.cend()));
 }
 
 std::uint32_t graph::get_edge_count(void) const
 {
-	return edges2.size();
+	return edges.size();
 }
 
 

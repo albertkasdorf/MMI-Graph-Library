@@ -12,6 +12,9 @@ class edge;
 //
 // http://anderberg.me/2016/07/04/c-custom-iterators/
 //
+
+//------------------------------------------------------------------------------
+
 class vertex_iterator
 {
 private:
@@ -42,6 +45,8 @@ public:
 	bool operator!=(const vertex_iterator&);
 };
 
+//------------------------------------------------------------------------------
+
 class edge_iterator
 {
 private:
@@ -70,6 +75,8 @@ public:
 	bool operator==(const edge_iterator& rhs);
 	bool operator!=(const edge_iterator& rhs);
 };
+
+//------------------------------------------------------------------------------
 
 class edge_iterator_on_multimap
 {
@@ -101,11 +108,14 @@ public:
 	bool operator!=(const edge_iterator_on_multimap& rhs);
 };
 
+//------------------------------------------------------------------------------
 
 template<typename T>
 T begin(std::pair<T,T>& iter_pair) { return iter_pair.first; }
 
 template<typename T>
 T end(std::pair<T,T>& iter_pair) { return iter_pair.second; }
+
+//------------------------------------------------------------------------------
 
 }

@@ -51,7 +51,7 @@ void algorithm::breadth_first_search(
 			processing_queue.push_back(target_vertex);
 			vertex_lookup.insert(target_vertex);
 
-			graph_sub->add_edge(*current_edge);
+			graph_sub->add_edge(current_edge);
 
 			continue;
 		}
@@ -85,7 +85,7 @@ void algorithm::depth_first_search_recursive(
 		if(next_vertex_found)
 			continue;
 
-		graph_sub->add_edge(*current_edge);
+		graph_sub->add_edge(current_edge);
 		depth_first_search_recursive(graph_full, next_vertex, lookup, graph_sub);
 	}
 }
