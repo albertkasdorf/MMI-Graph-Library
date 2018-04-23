@@ -14,7 +14,7 @@ edge::edge()
 	_target = nullptr;
 	_twin = nullptr;
 	_has_weight = false;
-	_weight = 0.f;
+	_weight = 0.0;
 }
 
 edge::~edge()
@@ -66,13 +66,13 @@ bool edge::has_weight(void) const
 	return _has_weight;
 }
 
-float edge::get_weight(void) const
+double edge::get_weight(void) const
 {
 	assert(has_weight());
 	return _weight;
 }
 
-void edge::set_weight(const float new_weight)
+void edge::set_weight(const double new_weight)
 {
 	_has_weight = true;
 	_weight = new_weight;

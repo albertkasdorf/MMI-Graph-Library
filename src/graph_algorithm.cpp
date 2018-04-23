@@ -150,10 +150,11 @@ void algorithm::connected_component(
 // Find the minimal spanning tree with the prim algorithm.
 //
 void algorithm::prim(
-	const graph* full_graph, const vertex* start_vertex, graph* mst_graph)
+	const graph* full_graph, const vertex* start_vertex, graph* mst_graph, double* mst_cost)
 {
 	std::priority_queue<const edge*, std::vector<const edge*>, compare_edge_weight> queue;
 	std::set<const vertex*, compare_vertex_id> vertex_lookup;
+	*mst_cost = 0.0;
 
 	for(auto edge : start_vertex->get_edges())
 	{
@@ -190,13 +191,14 @@ void algorithm::prim(
 		}
 
 		mst_graph->add_edge(new_edge);
+		*mst_cost += new_edge->get_weight();
 	}
 }
 
 //
 // Find the minimal spanning tree with the kruskal algorithm.
 //
-void algorithm::kruskal(const graph* full_graph, graph* mst_graph)
+void algorithm::kruskal(const graph* full_graph, graph* mst_graph, double* mst_cost)
 {
 	std::priority_queue<const edge*, std::vector<const edge*>, compare_edge_weight> queue;
 	// Quick lookup of the vertex component id.
@@ -204,6 +206,7 @@ void algorithm::kruskal(const graph* full_graph, graph* mst_graph)
 	// Components groups of vertices
 	std::map<std::size_t, std::vector<const vertex*>> component_lookup;
 	std::size_t component_id = 0;
+	*mst_cost = 0.0;
 
 	for(auto edge : full_graph->get_edges())
 	{
@@ -236,6 +239,7 @@ void algorithm::kruskal(const graph* full_graph, graph* mst_graph)
 			component_lookup[component_id].push_back(target_vertex);
 
 			mst_graph->add_edge(new_edge);
+			*mst_cost += new_edge->get_weight();
 
 			++component_id;
 		}
@@ -253,6 +257,7 @@ void algorithm::kruskal(const graph* full_graph, graph* mst_graph)
 			component_lookup[add_component_id].push_back(add_vertex);
 
 			mst_graph->add_edge(new_edge);
+			*mst_cost += new_edge->get_weight();
 		}
 		else // if(source_found && target_found)
 		{
@@ -286,6 +291,7 @@ void algorithm::kruskal(const graph* full_graph, graph* mst_graph)
 			component_lookup.erase(from_component_id);
 
 			mst_graph->add_edge(new_edge);
+			*mst_cost += new_edge->get_weight();
 		}
 	}
 	assert(component_lookup.size() == 1);

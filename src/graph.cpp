@@ -111,13 +111,13 @@ void graph::add_undirected_edge(
 }
 
 void graph::add_undirected_edge(
-	const uint32_t& source_id, const uint32_t& target_id, const float& weight)
+	const uint32_t& source_id, const uint32_t& target_id, const double& weight)
 {
 	add_undirected_edge(source_id, target_id, &weight);
 }
 
 void graph::add_undirected_edge(
-	const uint32_t& source_id, const uint32_t& target_id, const float* weight)
+	const uint32_t& source_id, const uint32_t& target_id, const double* weight)
 {
 	// create source vertex if not found
 	add_vertex(source_id);

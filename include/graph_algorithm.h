@@ -46,12 +46,12 @@ public:
 	//
 	// Find the minimal spanning tree with the prim algorithm.
 	//
-	void prim(const graph*, const vertex*, graph*);
+	void prim(const graph*, const vertex*, graph*, double*);
 
 	//
 	// Find the minimal spanning tree with the kruskal algorithm.
 	//
-	void kruskal(const graph*, graph*);
+	void kruskal(const graph*, graph*, double*);
 
 private:
 	void depth_first_search_recursive(

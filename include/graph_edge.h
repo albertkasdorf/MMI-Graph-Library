@@ -14,7 +14,7 @@ private:
 	const edge* _twin;
 
 	bool _has_weight;
-	float _weight;
+	double _weight;
 
 public:
 	edge(void);
@@ -34,8 +34,8 @@ public:
 	void set_twin(const edge*);
 
 	bool has_weight(void) const;
-	float get_weight(void) const;
-	void set_weight(const float);
+	double get_weight(void) const;
+	void set_weight(const double);
 
 	std::size_t get_hash(void) const;
 

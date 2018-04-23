@@ -39,9 +39,9 @@ public:
 	void add_undirected_edge(
 		const uint32_t&, const uint32_t&);
 	void add_undirected_edge(
-		const uint32_t&, const uint32_t&, const float&);
+		const uint32_t&, const uint32_t&, const double&);
 	void add_undirected_edge(
-		const uint32_t&, const uint32_t&, const float*);
+		const uint32_t&, const uint32_t&, const double*);
 
 	//
 	// Get all edges of the graph.

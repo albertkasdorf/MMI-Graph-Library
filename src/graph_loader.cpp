@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <fstream>
+#include <iomanip>
 
 #include <graph.h>
 #include <graph_edge.h>
@@ -143,7 +144,7 @@ void loader::load_edge_list_weighted(
 	while(true)
 	{
 		std::uint32_t source_id = {}, target_id = {};
-		float weight = {};
+		double weight = {};
 
 		fs >> source_id >> target_id >> weight;
 		if(fs.eof())
