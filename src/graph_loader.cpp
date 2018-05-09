@@ -37,6 +37,17 @@ std::string loader::file_name_get(const files& graph_file)
 	case files::G_10_20: file_name = "G_10_20.txt"; break;
 	case files::G_10_200: file_name = "G_10_200.txt"; break;
 	case files::G_100_200: file_name = "G_100_200.txt"; break;
+	case files::K_10: file_name = "K_10.txt"; break;
+	case files::K_10e: file_name = "K_10e.txt"; break;
+	case files::K_12: file_name = "K_12.txt"; break;
+	case files::K_12e: file_name = "K_12e.txt"; break;
+	case files::K_15: file_name = "K_15.txt"; break;
+	case files::K_15e: file_name = "K_15e.txt"; break;
+	case files::K_20: file_name = "K_20.txt"; break;
+	case files::K_30: file_name = "K_30.txt"; break;
+	case files::K_50: file_name = "K_50.txt"; break;
+	case files::K_70: file_name = "K_70.txt"; break;
+	case files::K_100: file_name = "K_100.txt"; break;
 	default: assert(false);
 	}
 
@@ -63,6 +74,17 @@ void loader::load(const files& graph_file, graph& graph)
 	case files::G_10_20:
 	case files::G_10_200:
 	case files::G_100_200:
+	case files::K_10:
+	case files::K_10e:
+	case files::K_12:
+	case files::K_12e:
+	case files::K_15:
+	case files::K_15e:
+	case files::K_20:
+	case files::K_30:
+	case files::K_50:
+	case files::K_70:
+	case files::K_100:
 		load_edge_list_weighted(file_name, graph);
 		break;
 	default: assert(false);

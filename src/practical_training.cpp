@@ -113,7 +113,7 @@ void practical_training::task00_debugging(void)
 void practical_training::task01_bfs_dfs(void)
 {
 	graph::loader graph_loader;
-	graph::files graph_file = graph::files::Graph3;
+	graph::files graph_file = graph::files::Graph4;
 	graph::graph g;
 	graph::algorithm ga;
 	std::vector<std::shared_ptr<graph::graph>> subgraphs_bfs, subgraphs_dfs;
@@ -171,7 +171,7 @@ void practical_training::task02_prim_kruskal(void)
 	std::cout << "=== Prim ===" << std::endl;
 	std::cout << "Full graph<" << g.get_vertex_count() << "," << g.get_edge_count() << ">" << std::endl;
 	std::cout << "Mst  graph<" << t_with_prim.get_vertex_count() << "," << t_with_prim.get_edge_count() << ">" << std::endl;
-    std::cout << "Mst cost: " << cost_of_prim << std::endl;
+	std::cout << "Mst cost: " << cost_of_prim << std::endl;
 
 	std::cout << "Elapsed time: ";
 	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
@@ -186,8 +186,37 @@ void practical_training::task02_prim_kruskal(void)
 	std::cout << "=== Kruskal ===" << std::endl;
 	std::cout << "Full graph<" << g.get_vertex_count() << "," << g.get_edge_count() << ">" << std::endl;
 	std::cout << "Mst  graph<" << t_with_kruskal.get_vertex_count() << "," << t_with_kruskal.get_edge_count() << ">" << std::endl;
-    std::cout << "Mst cost: " << cost_of_kruskal << std::endl;
+	std::cout << "Mst cost: " << cost_of_kruskal << std::endl;
 
+	std::cout << "Elapsed time: ";
+	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	std::cout << " ms" << std::endl;
+
+	return;
+}
+
+void practical_training::task03_tsp(void)
+{
+	graph::loader graph_loader;
+	graph::files graph_file = graph::files::K_10;
+	graph::graph g;
+	const graph::vertex* start_vertex = nullptr;
+	graph::algorithm graph_algorithm;
+	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+	double nn_trip_cost = 0.0;
+
+	std::cout << "Loading graph file: ";
+	std::cout << graph_loader.file_name_get(graph_file) << std::endl;
+	graph_loader.load(graph_file, g);
+	start_vertex = g.get_vertex(0);
+
+	start = std::chrono::high_resolution_clock::now();
+	{
+		graph_algorithm.nearest_neighbor(&g, start_vertex, &nn_trip_cost);
+	}
+	end = std::chrono::high_resolution_clock::now();
+
+	std::cout << "Nearest neighbor trip cost: " << nn_trip_cost << std::endl;
 	std::cout << "Elapsed time: ";
 	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 	std::cout << " ms" << std::endl;

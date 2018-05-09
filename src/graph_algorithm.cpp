@@ -297,4 +297,78 @@ void algorithm::kruskal(const graph* full_graph, graph* mst_graph, double* mst_c
 	assert(component_lookup.size() == 1);
 }
 
+void algorithm::nearest_neighbor(
+	const graph* full_graph, const vertex* start_vertex, double* trip_cost)
+{
+	const std::size_t vertex_count = full_graph->get_vertex_count();
+	const vertex* current_vertex = start_vertex;
+	const edge* next_edge = nullptr;
+	std::set<const vertex*, compare_vertex_id> vertex_lookup;
+
+	// trip_cost starts with 0
+	*trip_cost = 0.0;
+
+	// Visited every vertex in the graph
+	for(std::size_t i = 0; i < vertex_count; ++i)
+	{
+		// we have visited this vertex
+		vertex_lookup.insert(current_vertex);
+
+		// if this is the last vertex,
+		// remove the start_vertex from lookup to get only this edge.
+		if(i == (vertex_count - 1))
+		{
+			vertex_lookup.erase(start_vertex);
+		}
+
+		for(auto edge : current_vertex->get_edges())
+		{
+			assert(edge->has_weight());
+			assert(edge->get_source()->get_id() == current_vertex->get_id());
+
+			// Do the edge point to an unvisited vertex?
+			const bool vertex_visited = vertex_lookup.count(edge->get_target()) != 0;
+			if(vertex_visited)
+			{
+				continue;
+			}
+
+			// is this edge the first edge that point to an unvisited vertex?
+			if(next_edge == nullptr)
+			{
+				next_edge = edge;
+				continue;
+			}
+
+			// Do we have an edge that is better than the current best edge?
+			if(next_edge->get_weight() > edge->get_weight())
+			{
+				next_edge = edge;
+			}
+		}
+
+		*trip_cost += next_edge->get_weight();
+		current_vertex = next_edge->get_target();
+		next_edge = nullptr;
+	}
+
+	// Do I get back to the starting point?
+	assert(start_vertex->get_id() == current_vertex->get_id());
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

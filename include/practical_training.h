@@ -10,4 +10,5 @@ public:
 	void task00_debugging(void);
 	void task01_bfs_dfs(void);
 	void task02_prim_kruskal(void);
+	void task03_tsp(void);
 };

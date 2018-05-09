@@ -53,6 +53,11 @@ public:
 	//
 	void kruskal(const graph*, graph*, double*);
 
+	//
+	// Nearest neighbor
+	//
+	void nearest_neighbor(const graph*, const vertex*, double*);
+
 private:
 	void depth_first_search_recursive(
 		const graph*,
