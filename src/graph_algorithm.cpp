@@ -298,15 +298,12 @@ void algorithm::kruskal(const graph* full_graph, graph* mst_graph, double* mst_c
 }
 
 void algorithm::nearest_neighbor(
-	const graph* full_graph, const vertex* start_vertex, double* trip_cost)
+	const graph* full_graph, const vertex* start_vertex, graph* hamilton_graph)
 {
 	const std::size_t vertex_count = full_graph->get_vertex_count();
 	const vertex* current_vertex = start_vertex;
 	const edge* next_edge = nullptr;
 	std::set<const vertex*, compare_vertex_id> vertex_lookup;
-
-	// trip_cost starts with 0
-	*trip_cost = 0.0;
 
 	// Visited every vertex in the graph
 	for(std::size_t i = 0; i < vertex_count; ++i)
@@ -326,7 +323,7 @@ void algorithm::nearest_neighbor(
 			assert(edge->has_weight());
 			assert(edge->get_source()->get_id() == current_vertex->get_id());
 
-			// Do the edge point to an unvisited vertex?
+			// Do the edge point to an visited vertex?
 			const bool vertex_visited = vertex_lookup.count(edge->get_target()) != 0;
 			if(vertex_visited)
 			{
@@ -347,13 +344,76 @@ void algorithm::nearest_neighbor(
 			}
 		}
 
-		*trip_cost += next_edge->get_weight();
+		hamilton_graph->add_edge(next_edge);
 		current_vertex = next_edge->get_target();
 		next_edge = nullptr;
 	}
 
 	// Do I get back to the starting point?
 	assert(start_vertex->get_id() == current_vertex->get_id());
+}
+
+void algorithm::double_tree(
+	const graph* full_graph, const vertex* start_vertex, graph* hamilton_graph)
+{
+	graph mst_graph;
+	double cost_mst = 0.0;
+	std::set<const vertex*, compare_vertex_id> vertex_lookup;
+	std::stack<const vertex*> dfs_stack;
+	const vertex* current_vertex = nullptr;
+	const vertex* previous_vertex = nullptr;
+	const edge* connecting_edge = nullptr;
+
+	// get the minimal spanning tree with kruskal
+	kruskal(full_graph, &mst_graph, &cost_mst);
+
+	// get the start vertex from mst_graph an put them into the stack
+	current_vertex = mst_graph.get_vertex(start_vertex->get_id());
+
+	dfs_stack.push(current_vertex);
+	vertex_lookup.insert(current_vertex);
+
+	while(!dfs_stack.empty())
+	{
+		current_vertex = dfs_stack.top();
+		dfs_stack.pop();
+
+		// add all vertices, that are not already on the stack
+		for(auto edge : current_vertex->get_edges())
+		{
+			assert(edge->has_weight());
+			assert(edge->get_source()->get_id() == current_vertex->get_id());
+
+			// Do the edge point to an vertex at is already on the stack?
+			const bool vertex_on_stack = vertex_lookup.count(edge->get_target()) != 0;
+			if(vertex_on_stack)
+			{
+				continue;
+			}
+
+			dfs_stack.push(edge->get_target());
+			vertex_lookup.insert(edge->get_target());
+		}
+
+		// previous_vertex == nullptr means that this is the first run and
+		// we do not have two vertices
+		if(previous_vertex != nullptr)
+		{
+			// Search for the connecting edge in the full_graph
+			connecting_edge =
+				full_graph->get_edge(previous_vertex, current_vertex);
+			hamilton_graph->add_edge(connecting_edge);
+		}
+
+		previous_vertex = current_vertex;
+	}
+
+	// At least search for the connecting edge in the full_graph between
+	// the previous_vertex (last vertex) and the start_vertex
+	connecting_edge = full_graph->get_edge(previous_vertex, start_vertex);
+	hamilton_graph->add_edge(connecting_edge);
+
+	return;
 }
 
 

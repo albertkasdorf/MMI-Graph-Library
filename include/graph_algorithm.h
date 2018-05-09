@@ -56,7 +56,12 @@ public:
 	//
 	// Nearest neighbor
 	//
-	void nearest_neighbor(const graph*, const vertex*, double*);
+	void nearest_neighbor(const graph*, const vertex*, graph*);
+
+	//
+	// Double tree algorithm
+	//
+	void double_tree(const graph*, const vertex*, graph*);
 
 private:
 	void depth_first_search_recursive(

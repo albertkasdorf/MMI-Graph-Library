@@ -1,5 +1,6 @@
 #include <graph.h>
 #include <vector>
+#include <cassert>
 #include <graph_vertex.h>
 #include <graph_edge.h>
 
@@ -236,6 +237,32 @@ std::pair<edge_iterator_on_multimap, edge_iterator_on_multimap> graph::get_edges
 std::uint32_t graph::get_edge_count(void) const
 {
 	return edges.size();
+}
+
+const edge* graph::get_edge(
+	const vertex* source_vertex, const vertex* target_vertex) const
+{
+	const edge* result_edge = nullptr;
+	const vertex* search_vertex = get_vertex(source_vertex->get_id());
+
+	for(auto edge : search_vertex->get_edges())
+	{
+		// Edge should "point" in the right direction
+		assert(edge->get_source()->get_id() == search_vertex->get_id());
+
+		if(target_vertex->get_id() == edge->get_target()->get_id())
+		{
+			// More than one edge found.
+			assert(result_edge ==  nullptr);
+
+			result_edge = edge;
+		}
+	}
+
+	// No edge found
+	assert(result_edge);
+
+	return result_edge;
 }
 
 

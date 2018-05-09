@@ -77,6 +77,11 @@ public:
 	//
 	std::uint32_t get_edge_count(void) const;
 
+	//
+	// Returns the edge of the two vertices.
+	//
+	const edge* get_edge(const vertex*, const vertex*) const;
+
 
 
 

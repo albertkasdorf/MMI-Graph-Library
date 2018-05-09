@@ -5,12 +5,14 @@
 #include <functional>
 #include <string>
 #include <sstream>
+#include <queue>
 
 #include <graph.h>
 #include <graph_loader.h>
 #include <graph_algorithm.h>
 #include <graph_edge.h>
 #include <graph_vertex.h>
+#include <graph_comparer.h>
 
 
 practical_training::practical_training()
@@ -199,7 +201,7 @@ void practical_training::task03_tsp(void)
 {
 	graph::loader graph_loader;
 	graph::files graph_file = graph::files::K_10;
-	graph::graph g;
+	graph::graph g, nn_hamilton_graph, dt_hamilton_graph;
 	const graph::vertex* start_vertex = nullptr;
 	graph::algorithm graph_algorithm;
 	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
@@ -212,14 +214,78 @@ void practical_training::task03_tsp(void)
 
 	start = std::chrono::high_resolution_clock::now();
 	{
-		graph_algorithm.nearest_neighbor(&g, start_vertex, &nn_trip_cost);
+		graph_algorithm.nearest_neighbor(&g, start_vertex, &nn_hamilton_graph);
 	}
 	end = std::chrono::high_resolution_clock::now();
+	print_tsp_result(
+		std::string("Nearest neighbor"), &start, &end, &nn_hamilton_graph, start_vertex);
 
-	std::cout << "Nearest neighbor trip cost: " << nn_trip_cost << std::endl;
-	std::cout << "Elapsed time: ";
-	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-	std::cout << " ms" << std::endl;
+	start = std::chrono::high_resolution_clock::now();
+	{
+		graph_algorithm.double_tree(&g, start_vertex, &dt_hamilton_graph);
+	}
+	end = std::chrono::high_resolution_clock::now();
+	print_tsp_result(
+		std::string("Double tree"), &start, &end, &dt_hamilton_graph, start_vertex);
 
 	return;
+}
+
+void practical_training::print_tsp_result(
+	const std::string& algorithm_name,
+	const std::chrono::time_point<std::chrono::high_resolution_clock>* start,
+	const std::chrono::time_point<std::chrono::high_resolution_clock>* end,
+	const graph::graph* graph,
+	const graph::vertex* start_vertex)
+{
+	const graph::vertex* current_vertex = nullptr;
+	std::queue<const graph::vertex*> processing_queue;
+	std::set<const graph::vertex*, graph::compare_vertex_id> vertex_lookup;
+	double trip_cost = 0.0;
+
+	std::cout << "=== " << algorithm_name << " ===" << std::endl;
+	std::cout << "Elapsed time: ";
+	std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(*end - *start).count();
+	std::cout << " ms" << std::endl;
+
+	current_vertex = graph->get_vertex(start_vertex->get_id());
+	processing_queue.push(current_vertex);
+	vertex_lookup.insert(current_vertex);
+
+	std::cout << "Trip: ";
+	while(!processing_queue.empty())
+	{
+		current_vertex = processing_queue.front();
+		processing_queue.pop();
+
+		std::cout << current_vertex->get_id() << "->";
+
+		for(auto edge : current_vertex->get_edges())
+		{
+			const graph::vertex* target_vertex = edge->get_target();
+			const bool vertex_found = vertex_lookup.count(target_vertex) != 0;
+
+			if(vertex_found)
+				continue;
+
+			processing_queue.push(target_vertex);
+			vertex_lookup.insert(target_vertex);
+
+			trip_cost += edge->get_weight();
+
+			break;
+		}
+	}
+
+	for(auto edge : current_vertex->get_edges())
+	{
+		if(edge->get_target()->get_id() == start_vertex->get_id())
+		{
+			std::cout << start_vertex->get_id() << std::endl;
+			trip_cost += edge->get_weight();
+			break;
+		}
+	}
+
+	std::cout << "Cost: " << trip_cost << std::endl << std::endl;
 }
