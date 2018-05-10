@@ -7,6 +7,7 @@
 #include <cassert>
 #include <chrono>
 #include <iostream>
+#include <unordered_set>
 
 #include <graph_vertex.h>
 #include <graph.h>
@@ -414,6 +415,103 @@ void algorithm::double_tree(
 	hamilton_graph->add_edge(connecting_edge);
 
 	return;
+}
+
+void algorithm::try_all_routes(
+	const graph* complete_graph,
+	const vertex* start_vertex,
+	const bool use_branch_and_bound,
+	graph* hamilton_graph)
+{
+	std::size_t vertex_count = complete_graph->get_vertex_count();
+	std::stack<const edge*> current_tour;
+	std::set<const vertex*> visited_vertices;
+	std::stack<const edge*> best_tour;
+	double best_cost = std::numeric_limits<double>::infinity();
+
+	try_all_routes_recursive(
+		complete_graph->get_vertex(start_vertex->get_id()),
+		&use_branch_and_bound,
+		&vertex_count,
+		complete_graph->get_vertex(start_vertex->get_id()),
+		0.0,
+		&current_tour,
+		&visited_vertices,
+		&best_tour,
+		&best_cost );
+
+	while(!best_tour.empty())
+	{
+		hamilton_graph->add_edge(best_tour.top());
+		best_tour.pop();
+	}
+
+	return;
+}
+
+void algorithm::try_all_routes_recursive(
+	const vertex* const start_vertex,					// From this we started
+	const bool* const use_branch_and_bound,				// do not go deeper if the cost worse than the best_cost
+	const std::size_t* const number_of_vertices,
+	const vertex* current_vertex,
+	const double current_cost,							// cost the get to the current vertex
+	std::stack<const edge*>* const current_tour,		// list of edges to the get to the current vertex
+	std::set<const vertex*>* const visited_vertices,
+	std::stack<const edge*>* const best_tour,
+	double* const best_cost)
+{
+	const edge* edge_to_start_vertex = nullptr;
+
+	visited_vertices->insert(current_vertex);
+
+
+	for(auto edge : current_vertex->get_edges())
+	{
+		const vertex* next_vertex = edge->get_target();
+		const double new_cost = current_cost + edge->get_weight();
+
+		if( next_vertex->get_id() == start_vertex->get_id() )
+			edge_to_start_vertex = edge;
+
+		if(use_branch_and_bound && (new_cost >= *best_cost))
+			continue;
+
+		const bool vertex_visited = visited_vertices->count(next_vertex) != 0;
+		if(vertex_visited)
+			continue;
+
+		current_tour->push(edge);
+		{
+			try_all_routes_recursive(
+				start_vertex,
+				use_branch_and_bound,
+				number_of_vertices,
+				next_vertex,
+				new_cost,
+				current_tour,
+				visited_vertices,
+				best_tour,
+				best_cost );
+		}
+		current_tour->pop();
+	}
+
+	if(visited_vertices->size() == *number_of_vertices)
+	{
+		assert(edge_to_start_vertex != nullptr);
+
+		const double final_cost = current_cost + edge_to_start_vertex->get_weight();
+		if(final_cost < *best_cost)
+		{
+			current_tour->push(edge_to_start_vertex);
+			*best_tour = *current_tour;
+			*best_cost = final_cost;
+			current_tour->pop();
+		}
+	}
+
+	// we move down to the bottom of the call stack, so remove the current_vertex
+	visited_vertices->erase(current_vertex);
 }
 
 

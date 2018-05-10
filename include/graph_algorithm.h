@@ -3,11 +3,13 @@
 #include <vector>
 #include <set>
 #include <functional>
+#include <stack>
 
 namespace graph
 {
 class graph;
 class vertex;
+class edge;
 class compare_vertex_id;
 
 class algorithm
@@ -63,6 +65,11 @@ public:
 	//
 	void double_tree(const graph*, const vertex*, graph*);
 
+	//
+	// Try all possible routes of the graph and return the cheapest route.
+	//
+	void try_all_routes(const graph*, const vertex*, const bool, graph*);
+
 private:
 	void depth_first_search_recursive(
 		const graph*,
@@ -77,6 +84,20 @@ private:
 		const graph*,
 		std::vector<std::shared_ptr<graph>>*,
 		const std::function<void(const graph*, const vertex*, graph*)>&);
+
+	//
+	//
+	//
+	void try_all_routes_recursive(
+		const vertex* const,
+		const bool* const,
+		const std::size_t* const,
+		const vertex*,
+		const double,
+		std::stack<const edge*>* const,
+		std::set<const vertex*>* const,
+		std::stack<const edge*>* const,
+		double* const);
 };
 
 }

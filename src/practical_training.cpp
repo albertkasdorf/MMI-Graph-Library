@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <queue>
+#include <algorithm>
 
 #include <graph.h>
 #include <graph_loader.h>
@@ -200,33 +201,50 @@ void practical_training::task02_prim_kruskal(void)
 void practical_training::task03_tsp(void)
 {
 	graph::loader graph_loader;
-	graph::files graph_file = graph::files::K_10;
-	graph::graph g, nn_hamilton_graph, dt_hamilton_graph;
+	graph::files graph_file = graph::files::K_15;
+	graph::graph g, nn_hamilton_graph, dt_hamilton_graph, tar_hamilton_graph;
 	const graph::vertex* start_vertex = nullptr;
 	graph::algorithm graph_algorithm;
 	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
-	double nn_trip_cost = 0.0;
 
 	std::cout << "Loading graph file: ";
 	std::cout << graph_loader.file_name_get(graph_file) << std::endl;
 	graph_loader.load(graph_file, g);
 	start_vertex = g.get_vertex(0);
 
-	start = std::chrono::high_resolution_clock::now();
-	{
-		graph_algorithm.nearest_neighbor(&g, start_vertex, &nn_hamilton_graph);
-	}
-	end = std::chrono::high_resolution_clock::now();
-	print_tsp_result(
-		std::string("Nearest neighbor"), &start, &end, &nn_hamilton_graph, start_vertex);
+//	start = std::chrono::high_resolution_clock::now();
+//	{
+//		graph_algorithm.nearest_neighbor(&g, start_vertex, &nn_hamilton_graph);
+//	}
+//	end = std::chrono::high_resolution_clock::now();
+//	print_tsp_result(
+//		std::string("Nearest neighbor"), &start, &end, &nn_hamilton_graph, start_vertex);
+
+//	start = std::chrono::high_resolution_clock::now();
+//	{
+//		graph_algorithm.double_tree(&g, start_vertex, &dt_hamilton_graph);
+//	}
+//	end = std::chrono::high_resolution_clock::now();
+//	print_tsp_result(
+//		std::string("Double tree"), &start, &end, &dt_hamilton_graph, start_vertex);
 
 	start = std::chrono::high_resolution_clock::now();
 	{
-		graph_algorithm.double_tree(&g, start_vertex, &dt_hamilton_graph);
+		graph_algorithm.try_all_routes(
+			&g, start_vertex, false, &tar_hamilton_graph);
 	}
 	end = std::chrono::high_resolution_clock::now();
 	print_tsp_result(
-		std::string("Double tree"), &start, &end, &dt_hamilton_graph, start_vertex);
+		std::string("try_all_routes"), &start, &end, &tar_hamilton_graph, start_vertex);
+
+//	start = std::chrono::high_resolution_clock::now();
+//	{
+//		graph_algorithm.try_all_routes(
+//			&g, start_vertex, true, &tar_hamilton_graph);
+//	}
+//	end = std::chrono::high_resolution_clock::now();
+//	print_tsp_result(
+//		std::string("try_all_routes with branch and bound"), &start, &end, &tar_hamilton_graph, start_vertex);
 
 	return;
 }
