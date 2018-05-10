@@ -198,10 +198,16 @@ void practical_training::task02_prim_kruskal(void)
 	return;
 }
 
+//
+// K_10.txt (38.41; 0.0026s, mit B&B 0,0018s)
+// K_10e.txt (27.26; 0.0026s, mit B&B 0,0008s)
+// K_12.txt (45.19; 0.25s, mit B&B 0,072s)
+// K_12e.txt (36.13; 0.25s, mit B&B 0,013s)
+//
 void practical_training::task03_tsp(void)
 {
 	graph::loader graph_loader;
-	graph::files graph_file = graph::files::K_15;
+	graph::files graph_file = graph::files::K_10;
 	graph::graph g, nn_hamilton_graph, dt_hamilton_graph, tar_hamilton_graph;
 	const graph::vertex* start_vertex = nullptr;
 	graph::algorithm graph_algorithm;
@@ -212,21 +218,21 @@ void practical_training::task03_tsp(void)
 	graph_loader.load(graph_file, g);
 	start_vertex = g.get_vertex(0);
 
-//	start = std::chrono::high_resolution_clock::now();
-//	{
-//		graph_algorithm.nearest_neighbor(&g, start_vertex, &nn_hamilton_graph);
-//	}
-//	end = std::chrono::high_resolution_clock::now();
-//	print_tsp_result(
-//		std::string("Nearest neighbor"), &start, &end, &nn_hamilton_graph, start_vertex);
+	start = std::chrono::high_resolution_clock::now();
+	{
+		graph_algorithm.nearest_neighbor(&g, start_vertex, &nn_hamilton_graph);
+	}
+	end = std::chrono::high_resolution_clock::now();
+	print_tsp_result(
+		std::string("Nearest neighbor"), &start, &end, &nn_hamilton_graph, start_vertex);
 
-//	start = std::chrono::high_resolution_clock::now();
-//	{
-//		graph_algorithm.double_tree(&g, start_vertex, &dt_hamilton_graph);
-//	}
-//	end = std::chrono::high_resolution_clock::now();
-//	print_tsp_result(
-//		std::string("Double tree"), &start, &end, &dt_hamilton_graph, start_vertex);
+	start = std::chrono::high_resolution_clock::now();
+	{
+		graph_algorithm.double_tree(&g, start_vertex, &dt_hamilton_graph);
+	}
+	end = std::chrono::high_resolution_clock::now();
+	print_tsp_result(
+		std::string("Double tree"), &start, &end, &dt_hamilton_graph, start_vertex);
 
 	start = std::chrono::high_resolution_clock::now();
 	{

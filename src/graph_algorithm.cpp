@@ -306,7 +306,7 @@ void algorithm::nearest_neighbor(
 	const edge* next_edge = nullptr;
 	std::set<const vertex*, compare_vertex_id> vertex_lookup;
 
-	// Visited every vertex in the graph
+	// Visit every vertex in the graph
 	for(std::size_t i = 0; i < vertex_count; ++i)
 	{
 		// we have visited this vertex
@@ -385,7 +385,7 @@ void algorithm::double_tree(
 			assert(edge->has_weight());
 			assert(edge->get_source()->get_id() == current_vertex->get_id());
 
-			// Do the edge point to an vertex at is already on the stack?
+			// Do the edge point to an vertex that is already on the stack?
 			const bool vertex_on_stack = vertex_lookup.count(edge->get_target()) != 0;
 			if(vertex_on_stack)
 			{
@@ -413,8 +413,6 @@ void algorithm::double_tree(
 	// the previous_vertex (last vertex) and the start_vertex
 	connecting_edge = full_graph->get_edge(previous_vertex, start_vertex);
 	hamilton_graph->add_edge(connecting_edge);
-
-	return;
 }
 
 void algorithm::try_all_routes(
@@ -445,9 +443,64 @@ void algorithm::try_all_routes(
 		hamilton_graph->add_edge(best_tour.top());
 		best_tour.pop();
 	}
-
-	return;
 }
+
+//
+// Iterativer Ansatz
+//
+//void algorithm::try_all_routes(
+//	const graph* complete_graph,
+//	const vertex* start_vertex,
+//	const bool use_branch_and_bound,
+//	graph* hamilton_graph)
+//{
+//	std::stack<const vertex*> vertex_stack;
+//	std::stack<const vertex*> tour_stack;
+//	std::stack<std::size_t> level_stack;
+//	std::set<const vertex*> visited_vertices;
+//	std::size_t last_level = 0;
+
+//	vertex_stack.push(complete_graph->get_vertex(start_vertex->get_id()));
+//	level_stack.push(last_level + 1);
+
+//	while(!vertex_stack.empty())
+//	{
+//		const vertex* current_vertex = vertex_stack.top();
+//		vertex_stack.pop();
+
+//		const std::size_t current_level = level_stack.top();
+//		level_stack.pop();
+
+//		if(last_level < current_level)
+//		{
+//		}
+//		else if(last_level >= current_level)
+//		{
+//			for(std::size_t i = 0; i <= (last_level - current_level); ++i )
+//			{
+//				visited_vertices.erase(tour_stack.top());
+//				tour_stack.pop();
+//			}
+//		}
+//		tour_stack.push(current_vertex);
+//		visited_vertices.insert(current_vertex);
+
+//		for(auto edge : current_vertex->get_edges())
+//		{
+//			const vertex* next_vertex = edge->get_target();
+
+//			const bool vertex_visited = visited_vertices.count(next_vertex) != 0;
+//			if(vertex_visited)
+//				continue;
+
+
+//			vertex_stack.push(next_vertex);
+//			level_stack.push(current_level + 1);
+//		}
+
+//		last_level = current_level;
+//	}
+//}
 
 void algorithm::try_all_routes_recursive(
 	const vertex* const start_vertex,					// From this we started
@@ -464,22 +517,25 @@ void algorithm::try_all_routes_recursive(
 
 	visited_vertices->insert(current_vertex);
 
-
 	for(auto edge : current_vertex->get_edges())
 	{
 		const vertex* next_vertex = edge->get_target();
 		const double new_cost = current_cost + edge->get_weight();
 
+		// store the edge to the start point
 		if( next_vertex->get_id() == start_vertex->get_id() )
 			edge_to_start_vertex = edge;
 
+		// Do not go deeper if the cost worse than the best_cost
 		if(use_branch_and_bound && (new_cost >= *best_cost))
 			continue;
 
+		// Ignore already visited vertices
 		const bool vertex_visited = visited_vertices->count(next_vertex) != 0;
 		if(vertex_visited)
 			continue;
 
+		// We go deeper, so add the edge and remove when we go up
 		current_tour->push(edge);
 		{
 			try_all_routes_recursive(
@@ -496,6 +552,8 @@ void algorithm::try_all_routes_recursive(
 		current_tour->pop();
 	}
 
+	// We had visited all vertices, so compute the final_cost to the start_vertex
+	// and update the best_tour/best_cost if the final_cost are cheaper.
 	if(visited_vertices->size() == *number_of_vertices)
 	{
 		assert(edge_to_start_vertex != nullptr);
@@ -510,23 +568,8 @@ void algorithm::try_all_routes_recursive(
 		}
 	}
 
-	// we move down to the bottom of the call stack, so remove the current_vertex
+	// we reached the bottom of the call stack, so remove the current_vertex
 	visited_vertices->erase(current_vertex);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
