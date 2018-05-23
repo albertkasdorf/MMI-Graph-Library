@@ -332,8 +332,8 @@ void practical_training::print_tsp_result(
 void practical_training::task04_shortest_path(void)
 {
 	graph::loader graph_loader;
-	graph::files graph_file = graph::files::Wege1;
-	graph::graph g;
+	graph::files graph_file = graph::files::Wege2;
+	graph::graph g, dijkstra_spt, mbf_spt;
 	const graph::vertex* start_vertex = nullptr;
 	graph::algorithm graph_algorithm;
 	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
@@ -341,7 +341,13 @@ void practical_training::task04_shortest_path(void)
 	std::cout << "Loading graph file: ";
 	std::cout << graph_loader.file_name_get(graph_file) << std::endl;
 	graph_loader.load(graph_file, g, true);
-	start_vertex = g.get_vertex(0);
+	start_vertex = g.get_vertex(2);
+
+	start = std::chrono::high_resolution_clock::now();
+	{
+		graph_algorithm.dijkstra(&g, start_vertex, &dijkstra_spt);
+	}
+	end = std::chrono::high_resolution_clock::now();
 
 	return;
 }

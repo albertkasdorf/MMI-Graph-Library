@@ -8,6 +8,7 @@
 #include <chrono>
 #include <iostream>
 #include <unordered_set>
+#include <algorithm>
 
 #include <graph_vertex.h>
 #include <graph.h>
@@ -570,6 +571,93 @@ void algorithm::try_all_routes_recursive(
 
 	// we reached the bottom of the call stack, so remove the current_vertex
 	visited_vertices->erase(current_vertex);
+}
+
+//
+// Dijkstra-Algorithm
+//
+void algorithm::dijkstra(
+	const graph* full_graph,
+	const vertex* start_vertex,
+	graph* shortest_path_graph)
+{
+	std::map<const vertex*, double> dist;
+	std::map<const vertex*, const edge*> pred;
+
+	const vertex* current_vertex = nullptr;
+	double current_vertex_dist = std::numeric_limits<double>::infinity();
+
+	std::deque<const vertex*> unprocessed_vertices;
+
+	for(auto current_vertex : full_graph->get_vertices())
+	{
+		double initial_dist = std::numeric_limits<double>::infinity();
+
+		if(current_vertex->get_id() == start_vertex->get_id())
+		{
+			initial_dist = 0.0;
+		}
+
+		dist.insert(std::make_pair(current_vertex, initial_dist));
+		pred.insert(std::make_pair(current_vertex, nullptr));
+
+		unprocessed_vertices.insert(std::end(unprocessed_vertices), current_vertex);
+	}
+
+
+	current_vertex = full_graph->get_vertex(start_vertex->get_id());
+	current_vertex_dist = 0;
+
+	while(current_vertex_dist != std::numeric_limits<double>::infinity())
+	{
+		for(auto current_edge : current_vertex->get_edges())
+		{
+			assert(current_vertex == current_edge->get_source());
+			assert(current_edge->has_weight());
+
+			const double dist_target = dist[current_edge->get_target()];
+
+			if((current_vertex_dist + current_edge->get_weight()) < dist_target)
+			{
+				dist[current_edge->get_target()] = (current_vertex_dist + current_edge->get_weight());
+				pred[current_edge->get_target()] = current_edge;
+			}
+		}
+
+		unprocessed_vertices.erase(
+			std::remove(
+				std::begin(unprocessed_vertices),
+				std::end(unprocessed_vertices),
+				current_vertex));
+
+		current_vertex_dist = std::numeric_limits<double>::infinity();
+
+		for(auto next_vertex : unprocessed_vertices)
+		{
+			const double next_vertex_dist = dist[next_vertex];
+
+			if(next_vertex_dist <= current_vertex_dist)
+			{
+				current_vertex_dist = next_vertex_dist;
+				current_vertex = next_vertex;
+			}
+		}
+	}
+
+
+
+	return;
+}
+
+//
+// Moore-Bellman-Ford-Algorithm
+//
+void algorithm::moore_bellman_ford(
+	const graph* full_graph,
+	const vertex* start_vertex,
+	graph* shortest_path_graph)
+{
+
 }
 
 }

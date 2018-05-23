@@ -70,6 +70,16 @@ public:
 	//
 	void try_all_routes(const graph*, const vertex*, const bool, graph*);
 
+	//
+	// Dijkstra-Algorithm
+	//
+	void dijkstra(const graph*, const vertex*, graph*);
+
+	//
+	// Moore-Bellman-Ford-Algorithm
+	//
+	void moore_bellman_ford(const graph*, const vertex*, graph*);
+
 private:
 	void depth_first_search_recursive(
 		const graph*,
