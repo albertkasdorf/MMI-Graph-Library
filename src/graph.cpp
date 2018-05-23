@@ -155,6 +155,39 @@ void graph::add_undirected_edge(
 	edges.insert(std::make_pair(hash_tgt_edge, tgt_edge));
 }
 
+void graph::add_directed_edge(
+	const uint32_t& source_id, const uint32_t& target_id, const double& weight)
+{
+	add_directed_edge(source_id, target_id, &weight);
+}
+
+void graph::add_directed_edge(
+	const uint32_t& source_id, const uint32_t& target_id, const double* weight)
+{
+	// create source vertex if not found
+	add_vertex(source_id);
+	add_vertex(target_id);
+
+	vertex* source = get_vertex_internal(source_id);
+	vertex* target = get_vertex_internal(target_id);
+
+	std::shared_ptr<edge> src_tgt_edge = std::make_shared<edge>();
+
+	src_tgt_edge->set_source(source);
+	src_tgt_edge->set_target(target);
+
+	if(weight != nullptr)
+	{
+		src_tgt_edge->set_weight(*weight);
+	}
+
+	source->add_edge(src_tgt_edge.get());
+
+	const std::size_t hash_src_edge = src_tgt_edge->get_hash();
+
+	edges.insert(std::make_pair(hash_src_edge, src_tgt_edge));
+}
+
 
 std::pair<vertex_iterator, vertex_iterator> graph::get_vertices(void) const
 {

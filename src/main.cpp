@@ -7,7 +7,8 @@ int main()
 		//pt.task00_debugging();
 		//pt.task01_bfs_dfs();
 		//pt.task02_prim_kruskal();
-		pt.task03_tsp();
+		//pt.task03_tsp();
+		pt.task04_shortest_path();
 	}
 	return 0;
 }

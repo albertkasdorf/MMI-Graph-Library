@@ -44,6 +44,16 @@ public:
 		const uint32_t&, const uint32_t&, const double*);
 
 	//
+	// Add a new directed edge to the graph.
+	// Remark:
+	// - Vertices created if they not exist in graph.
+	//
+	void add_directed_edge(
+		const uint32_t&, const uint32_t&, const double&);
+	void add_directed_edge(
+		const uint32_t&, const uint32_t&, const double*);
+
+	//
 	// Get all edges of the graph.
 	//
 	std::pair<edge_iterator_on_multimap, edge_iterator_on_multimap> get_edges(void) const;

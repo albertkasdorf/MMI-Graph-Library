@@ -26,6 +26,9 @@ enum class files
 	K_50,
 	K_70,
 	K_100,
+	Wege1,
+	Wege2,
+	Wege3,
 };
 
 }

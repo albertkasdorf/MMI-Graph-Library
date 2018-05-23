@@ -48,13 +48,19 @@ std::string loader::file_name_get(const files& graph_file)
 	case files::K_50: file_name = "K_50.txt"; break;
 	case files::K_70: file_name = "K_70.txt"; break;
 	case files::K_100: file_name = "K_100.txt"; break;
+	case files::Wege1: file_name = "Wege1.txt"; break;
+	case files::Wege2: file_name = "Wege2.txt"; break;
+	case files::Wege3: file_name = "Wege3.txt"; break;
 	default: assert(false);
 	}
 
 	return file_path + file_name;
 }
 
-void loader::load(const files& graph_file, graph& graph)
+void loader::load(
+	const files& graph_file,
+	graph& graph,
+	const bool create_directed_graph)
 {
 	std::string file_name = file_name_get(graph_file);
 
@@ -85,7 +91,10 @@ void loader::load(const files& graph_file, graph& graph)
 	case files::K_50:
 	case files::K_70:
 	case files::K_100:
-		load_edge_list_weighted(file_name, graph);
+	case files::Wege1:
+	case files::Wege2:
+	case files::Wege3:
+		load_edge_list_weighted(file_name, graph, create_directed_graph);
 		break;
 	default: assert(false);
 	}
@@ -150,7 +159,9 @@ void loader::load_edge_list(
 }
 
 void loader::load_edge_list_weighted(
-	const std::string& file_name, graph& graph)
+	const std::string& file_name,
+	graph& graph,
+	const bool create_directed_graph)
 {
 	std::fstream fs;
 	std::uint32_t vertex_count = 0;
@@ -172,7 +183,14 @@ void loader::load_edge_list_weighted(
 		if(fs.eof())
 			break;
 
-		graph.add_undirected_edge(source_id, target_id, weight);
+		if(create_directed_graph)
+		{
+			graph.add_directed_edge(source_id, target_id, weight);
+		}
+		else
+		{
+			graph.add_undirected_edge(source_id, target_id, weight);
+		}
 	}
 
 	assert(graph.get_vertex_count() == vertex_count);

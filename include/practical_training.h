@@ -15,6 +15,7 @@ public:
 	void task01_bfs_dfs(void);
 	void task02_prim_kruskal(void);
 	void task03_tsp(void);
+	void task04_shortest_path(void);
 
 private:
 	void print_tsp_result(

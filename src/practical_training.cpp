@@ -313,3 +313,35 @@ void practical_training::print_tsp_result(
 
 	std::cout << "Cost: " << trip_cost << std::endl << std::endl;
 }
+
+//
+// Zur Kontrolle:
+// Bei gerichteter Betrachtungsweise hat der kürzeste Weg von Knoten 2 zu
+// Knoten 0 bei Wege1 die Länge 6, bei Wege2 die Länge 2.
+// Bei Wege3 gibt es einen negativen Zykel.
+// Weitere Kontrollen:
+// Bei G_1_2 hat der kürzeste Weg von 0 nach 1 die Länge 5.54417, wenn man die
+// Kanten gerichtet versteht, bzw. 2.36796 im ungerichteten Fall.
+//
+// Wege1(2->0) = 6
+// Wege2(2->0) = 2
+// Wege3(2->0) = -
+// G_1_2(0->1) = 5.54417
+// G_1_2(0<->1) = 2.36796
+//
+void practical_training::task04_shortest_path(void)
+{
+	graph::loader graph_loader;
+	graph::files graph_file = graph::files::Wege1;
+	graph::graph g;
+	const graph::vertex* start_vertex = nullptr;
+	graph::algorithm graph_algorithm;
+	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
+
+	std::cout << "Loading graph file: ";
+	std::cout << graph_loader.file_name_get(graph_file) << std::endl;
+	graph_loader.load(graph_file, g, true);
+	start_vertex = g.get_vertex(0);
+
+	return;
+}
