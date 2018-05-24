@@ -9,6 +9,7 @@
 #include <iostream>
 #include <unordered_set>
 #include <algorithm>
+#include <stdexcept>
 
 #include <graph_vertex.h>
 #include <graph.h>
@@ -581,70 +582,108 @@ void algorithm::dijkstra(
 	const vertex* start_vertex,
 	graph* shortest_path_graph)
 {
-	std::map<const vertex*, double> dist;
-	std::map<const vertex*, const edge*> pred;
-
-	const vertex* current_vertex = nullptr;
-	double current_vertex_dist = std::numeric_limits<double>::infinity();
-
+	// Distances from the start_vertx to the other vertices.
+	std::map<const vertex*, double> distances;
+	// Edge from the predecessor vertex. (target == vertex)
+	std::map<const vertex*, const edge*> predecessor;
 	std::deque<const vertex*> unprocessed_vertices;
 
-	for(auto current_vertex : full_graph->get_vertices())
-	{
-		double initial_dist = std::numeric_limits<double>::infinity();
+	const vertex* current_vertex = nullptr;
+	double current_vertex_distance = std::numeric_limits<double>::infinity();
 
-		if(current_vertex->get_id() == start_vertex->get_id())
+
+	// Initialize distances, predecessor and unprocessed_vertices
+	for(auto vertex : full_graph->get_vertices())
+	{
+		double initial_distance = std::numeric_limits<double>::infinity();
+
+		if(vertex->get_id() == start_vertex->get_id())
 		{
-			initial_dist = 0.0;
+			initial_distance = 0.0;
 		}
 
-		dist.insert(std::make_pair(current_vertex, initial_dist));
-		pred.insert(std::make_pair(current_vertex, nullptr));
+		distances.insert(
+			std::make_pair(vertex, initial_distance));
 
-		unprocessed_vertices.insert(std::end(unprocessed_vertices), current_vertex);
+		predecessor.insert(
+			std::make_pair(vertex, nullptr));
+
+		unprocessed_vertices.insert(
+			std::end(unprocessed_vertices), vertex);
 	}
 
-
+	// start algorithm with the start_vertex
 	current_vertex = full_graph->get_vertex(start_vertex->get_id());
-	current_vertex_dist = 0;
+	current_vertex_distance = distances[current_vertex];
 
-	while(current_vertex_dist != std::numeric_limits<double>::infinity())
+	while(true)
 	{
-		for(auto current_edge : current_vertex->get_edges())
+		for(auto explore_edge : current_vertex->get_edges())
 		{
-			assert(current_vertex == current_edge->get_source());
-			assert(current_edge->has_weight());
+			assert(current_vertex == explore_edge->get_source());
+			assert(explore_edge->has_weight());
 
-			const double dist_target = dist[current_edge->get_target()];
-
-			if((current_vertex_dist + current_edge->get_weight()) < dist_target)
+			if(explore_edge->get_weight() < 0.0)
 			{
-				dist[current_edge->get_target()] = (current_vertex_dist + current_edge->get_weight());
-				pred[current_edge->get_target()] = current_edge;
+				throw std::invalid_argument(
+					std::string("Dijkstra can not work with negative weights."));
+			}
+
+			const vertex* target_vertex = explore_edge->get_target();
+
+			// What is my current distance from start_vertex to target_vertex
+			const double target_vertex_distance = distances[target_vertex];
+
+			const double new_distance =
+				current_vertex_distance + explore_edge->get_weight();
+
+			// If the new route is better, update the data
+			if(new_distance < target_vertex_distance)
+			{
+				distances[target_vertex] = new_distance;
+				predecessor[target_vertex] = explore_edge;
 			}
 		}
 
+		// Remove examined vertex
 		unprocessed_vertices.erase(
 			std::remove(
 				std::begin(unprocessed_vertices),
 				std::end(unprocessed_vertices),
 				current_vertex));
 
-		current_vertex_dist = std::numeric_limits<double>::infinity();
+		// If all vertices processed, stop the endless loop
+		if(unprocessed_vertices.empty())
+			break;
 
+		// Find the next vertex with the lowest distance
+		current_vertex = nullptr;
+		current_vertex_distance = std::numeric_limits<double>::infinity();
 		for(auto next_vertex : unprocessed_vertices)
 		{
-			const double next_vertex_dist = dist[next_vertex];
+			const double next_vertex_distance = distances[next_vertex];
 
-			if(next_vertex_dist <= current_vertex_dist)
+			if(next_vertex_distance <= current_vertex_distance)
 			{
-				current_vertex_dist = next_vertex_dist;
 				current_vertex = next_vertex;
+				current_vertex_distance = next_vertex_distance;
 			}
 		}
 	}
 
+	// Build shortest path graph
+	for(auto kvp : predecessor)
+	{
+		// The start_vertex has not predecessor
+		if(kvp.second == nullptr)
+			continue;
 
+		//shortest_path_graph->add_edge(kvp.second);
+		shortest_path_graph->add_directed_edge(
+			kvp.second->get_source()->get_id(),
+			kvp.second->get_target()->get_id(),
+			kvp.second->get_weight());
+	}
 
 	return;
 }

@@ -332,22 +332,54 @@ void practical_training::print_tsp_result(
 void practical_training::task04_shortest_path(void)
 {
 	graph::loader graph_loader;
-	graph::files graph_file = graph::files::Wege2;
+	graph::files graph_file = graph::files::Wege1;
 	graph::graph g, dijkstra_spt, mbf_spt;
 	const graph::vertex* start_vertex = nullptr;
 	graph::algorithm graph_algorithm;
-	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
 
 	std::cout << "Loading graph file: ";
 	std::cout << graph_loader.file_name_get(graph_file) << std::endl;
 	graph_loader.load(graph_file, g, true);
 	start_vertex = g.get_vertex(2);
 
-	start = std::chrono::high_resolution_clock::now();
+	try
 	{
 		graph_algorithm.dijkstra(&g, start_vertex, &dijkstra_spt);
+		print_shortest_path_result(
+			std::string("Dijkstra"), &dijkstra_spt, start_vertex);
 	}
-	end = std::chrono::high_resolution_clock::now();
+	catch(const std::exception& e)
+	{
+		std::cout << e.what() << std::endl;
+	}
+
 
 	return;
+}
+
+void practical_training::print_shortest_path_result(
+	const std::string& algorithm_name,
+	const graph::graph* shortest_path_graph,
+	const graph::vertex* start_vertex,
+	const graph::vertex* current_vertex,
+	const double current_distance)
+{
+	if(current_vertex == nullptr)
+	{
+		std::cout << "=== " << algorithm_name << " ===" << std::endl;
+		current_vertex = shortest_path_graph->get_vertex(start_vertex->get_id());
+	}
+
+	std::cout << "[" << start_vertex->get_id() << "->" << current_vertex->get_id() << "] = ";
+	std::cout << current_distance << std::endl;
+
+	for(auto edge : current_vertex->get_edges())
+	{
+		print_shortest_path_result(
+			algorithm_name,
+			shortest_path_graph,
+			start_vertex,
+			edge->get_target(),
+			edge->get_weight() + current_distance);
+	}
 }

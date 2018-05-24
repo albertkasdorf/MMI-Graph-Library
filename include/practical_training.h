@@ -24,4 +24,11 @@ private:
 		const std::chrono::time_point<std::chrono::high_resolution_clock>*,
 		const graph::graph*,
 		const graph::vertex*);
+
+	void print_shortest_path_result(
+		const std::string&,
+		const graph::graph*,
+		const graph::vertex*,
+		const graph::vertex* = nullptr,
+		const double = 0);
 };

@@ -75,18 +75,29 @@ std::uint32_t graph::get_vertex_count(void) const
 
 void graph::add_edge(const edge* new_edge)
 {
-	// TODO: Check TWIN condition
-	if(new_edge->has_weight())
+	if(new_edge->has_twin())
 	{
-		add_undirected_edge(
-			new_edge->get_source()->get_id(),
-			new_edge->get_target()->get_id(),
-			new_edge->get_weight());
+		if(new_edge->has_weight())
+		{
+			add_undirected_edge(
+				new_edge->get_source()->get_id(),
+				new_edge->get_target()->get_id(),
+				new_edge->get_weight());
+		}
+		else
+		{
+			add_undirected_edge(
+				new_edge->get_source()->get_id(), new_edge->get_target()->get_id());
+		}
 	}
 	else
 	{
-		add_undirected_edge(
-			new_edge->get_source()->get_id(), new_edge->get_target()->get_id());
+		assert(new_edge->has_weight());
+
+		add_directed_edge(
+			new_edge->get_source()->get_id(),
+			new_edge->get_target()->get_id(),
+			new_edge->get_weight());
 	}
 }
 
