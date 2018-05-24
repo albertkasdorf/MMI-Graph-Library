@@ -1,4 +1,4 @@
-# Mathematische Methoden der Informatik - Praktikum SoSe18
+# Mathematische Methoden der Informatik - Praktikum SoSe18 [![Build Status](https://travis-ci.com/albertkasdorf/MMI-Graph-Library.svg?branch=master)](https://travis-ci.com/albertkasdorf/MMI-Graph-Library)
 
 1. Graph: Aufbau und Speicherformat
    * Breitensuche (iterativ) und Tiefensuche (rekursiv) zur Bestimmung der Anzahl der Zusammenhangskomponenten
