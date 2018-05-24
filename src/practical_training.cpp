@@ -332,15 +332,17 @@ void practical_training::print_tsp_result(
 void practical_training::task04_shortest_path(void)
 {
 	graph::loader graph_loader;
-	graph::files graph_file = graph::files::Wege1;
+	const graph::files graph_file = graph::files::Wege1;
+	const std::uint32_t start_vertex_id = 2;
+	const bool create_directed_graph = true;
 	graph::graph g, dijkstra_spt, mbf_spt;
 	const graph::vertex* start_vertex = nullptr;
 	graph::algorithm graph_algorithm;
 
 	std::cout << "Loading graph file: ";
-	std::cout << graph_loader.file_name_get(graph_file) << std::endl;
-	graph_loader.load(graph_file, g, true);
-	start_vertex = g.get_vertex(2);
+	std::cout << graph_loader.file_name_get(graph_file) << std::endl << std::endl;
+	graph_loader.load(graph_file, g, create_directed_graph);
+	start_vertex = g.get_vertex(start_vertex_id);
 
 	try
 	{
@@ -350,9 +352,21 @@ void practical_training::task04_shortest_path(void)
 	}
 	catch(const std::exception& e)
 	{
-		std::cout << e.what() << std::endl;
+		std::cout << "Exception: " << e.what() << std::endl;
 	}
 
+	std::cout << std::endl;
+
+	try
+	{
+		graph_algorithm.moore_bellman_ford(&g, start_vertex, &mbf_spt);
+		print_shortest_path_result(
+			std::string("Moore Bellman Ford"), &mbf_spt, start_vertex);
+	}
+	catch(const std::exception& e)
+	{
+		std::cout << "Exception: " << e.what() << std::endl;
+	}
 
 	return;
 }
@@ -364,14 +378,16 @@ void practical_training::print_shortest_path_result(
 	const graph::vertex* current_vertex,
 	const double current_distance)
 {
-	if(current_vertex == nullptr)
+	const bool root_of_the_tree = (current_vertex == nullptr);
+
+	if(root_of_the_tree)
 	{
 		std::cout << "=== " << algorithm_name << " ===" << std::endl;
 		current_vertex = shortest_path_graph->get_vertex(start_vertex->get_id());
 	}
 
 	std::cout << "[" << start_vertex->get_id() << "->" << current_vertex->get_id() << "] = ";
-	std::cout << current_distance << std::endl;
+	std::cout << current_distance << " | ";
 
 	for(auto edge : current_vertex->get_edges())
 	{
@@ -382,4 +398,7 @@ void practical_training::print_shortest_path_result(
 			edge->get_target(),
 			edge->get_weight() + current_distance);
 	}
+
+	if(root_of_the_tree)
+		std::cout << std::endl;
 }

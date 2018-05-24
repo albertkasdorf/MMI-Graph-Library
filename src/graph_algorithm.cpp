@@ -582,7 +582,7 @@ void algorithm::dijkstra(
 	const vertex* start_vertex,
 	graph* shortest_path_graph)
 {
-	// Distances from the start_vertx to the other vertices.
+	// Distances from the start_vertex to the other vertices.
 	std::map<const vertex*, double> distances;
 	// Edge from the predecessor vertex. (target == vertex)
 	std::map<const vertex*, const edge*> predecessor;
@@ -678,7 +678,6 @@ void algorithm::dijkstra(
 		if(kvp.second == nullptr)
 			continue;
 
-		//shortest_path_graph->add_edge(kvp.second);
 		shortest_path_graph->add_directed_edge(
 			kvp.second->get_source()->get_id(),
 			kvp.second->get_target()->get_id(),
@@ -696,7 +695,93 @@ void algorithm::moore_bellman_ford(
 	const vertex* start_vertex,
 	graph* shortest_path_graph)
 {
+	// Distances from the start_vertex to the other vertices.
+	std::map<const vertex*, double> distances;
+	// Edge from the predecessor vertex. (target == vertex)
+	std::map<const vertex*, const edge*> predecessor;
+	bool negative_cycle_found = false;
 
+
+	// Initialize distances and predecessor
+	for(auto vertex : full_graph->get_vertices())
+	{
+		double initial_distance = std::numeric_limits<double>::infinity();
+
+		if(vertex->get_id() == start_vertex->get_id())
+		{
+			initial_distance = 0.0;
+		}
+
+		distances.insert(
+			std::make_pair(vertex, initial_distance));
+
+		predecessor.insert(
+			std::make_pair(vertex, nullptr));
+	}
+
+	// Compute the distances and the predecessor
+	for(std::uint32_t i = 0; i < full_graph->get_vertex_count() - 1; ++i)
+	{
+		for(auto edge : full_graph->get_edges())
+		{
+			const vertex* source_vertex = edge->get_source();
+			const vertex* target_vertex = edge->get_target();
+
+			const double source_distance = distances[source_vertex];
+			const double target_distance = distances[target_vertex];
+
+			const double new_distance = source_distance + edge->get_weight();
+
+			if(new_distance < target_distance)
+			{
+				distances[target_vertex] = new_distance;
+				predecessor[target_vertex] = edge;
+			}
+		}
+	}
+
+	// Detect the vertices that are part of the negative cycle.
+	for(std::uint32_t i = 0; i < full_graph->get_vertex_count() - 1; ++i)
+	{
+		for(auto edge : full_graph->get_edges())
+		{
+			const vertex* source_vertex = edge->get_source();
+			const vertex* target_vertex = edge->get_target();
+
+			const double source_distance = distances[source_vertex];
+			const double target_distance = distances[target_vertex];
+
+			const double new_distance = source_distance + edge->get_weight();
+
+			if(new_distance < target_distance)
+			{
+				distances[target_vertex] = -std::numeric_limits<double>::infinity();
+
+				negative_cycle_found = true;
+			}
+		}
+	}
+
+	if(negative_cycle_found)
+	{
+		throw std::invalid_argument(
+			std::string("Moore-Bellman-Ford detected a negative cycle."));
+	}
+
+	// Build shortest path graph
+	for(auto kvp : predecessor)
+	{
+		// The start_vertex has not predecessor
+		if(kvp.second == nullptr)
+			continue;
+
+		shortest_path_graph->add_directed_edge(
+			kvp.second->get_source()->get_id(),
+			kvp.second->get_target()->get_id(),
+			kvp.second->get_weight());
+	}
+
+	return;
 }
 
 }
