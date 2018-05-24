@@ -22,7 +22,7 @@ loader::~loader()
 
 std::string loader::file_name_get(const files& graph_file)
 {
-	std::string file_path = "/home/albert/Documents/Studium/MMI-SS18/graphen/";
+	std::string file_path = "../graph/";
 	std::string file_name;
 
 	switch(graph_file)
