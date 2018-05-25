@@ -338,67 +338,42 @@ void practical_training::task04_shortest_path(void)
 	graph::graph g, dijkstra_spt, mbf_spt;
 	const graph::vertex* start_vertex = nullptr;
 	graph::algorithm graph_algorithm;
+	bool negative_weights_found = false;
+	bool negative_cycle_found = false;
+	std::map<const graph::vertex*, double> dijkstra_distance, mbf_distance;
 
 	std::cout << "Loading graph file: ";
 	std::cout << graph_loader.file_name_get(graph_file) << std::endl << std::endl;
 	graph_loader.load(graph_file, g, create_directed_graph);
 	start_vertex = g.get_vertex(start_vertex_id);
 
-	try
+	std::cout << "=== Dijkstra ===" << std::endl;
+	graph_algorithm.dijkstra(
+		&g, start_vertex, &dijkstra_spt, &dijkstra_distance, &negative_weights_found);
+	if(negative_weights_found)
 	{
-		graph_algorithm.dijkstra(&g, start_vertex, &dijkstra_spt);
-		print_shortest_path_result(
-			std::string("Dijkstra"), &dijkstra_spt, start_vertex);
+		std::cout << "=> Negative weights found." << std::endl;
 	}
-	catch(const std::exception& e)
-	{
-		std::cout << "Exception: " << e.what() << std::endl;
-	}
+	print_shortest_path_result(start_vertex, &dijkstra_distance);
 
-	std::cout << std::endl;
-
-	try
+	std::cout << "=== Moore Bellman Ford ===" << std::endl;
+	graph_algorithm.moore_bellman_ford(
+		&g, start_vertex, &mbf_spt, &mbf_distance, &negative_cycle_found);
+	if(negative_cycle_found)
 	{
-		graph_algorithm.moore_bellman_ford(&g, start_vertex, &mbf_spt);
-		print_shortest_path_result(
-			std::string("Moore Bellman Ford"), &mbf_spt, start_vertex);
+		std::cout << "=> Negative cycle found." << std::endl;
 	}
-	catch(const std::exception& e)
-	{
-		std::cout << "Exception: " << e.what() << std::endl;
-	}
-
-	return;
+	print_shortest_path_result(start_vertex, &mbf_distance);
 }
 
 void practical_training::print_shortest_path_result(
-	const std::string& algorithm_name,
-	const graph::graph* shortest_path_graph,
 	const graph::vertex* start_vertex,
-	const graph::vertex* current_vertex,
-	const double current_distance)
+	const std::map<const graph::vertex*, double>* distance)
 {
-	const bool root_of_the_tree = (current_vertex == nullptr);
-
-	if(root_of_the_tree)
+	for(auto kvp : *distance)
 	{
-		std::cout << "=== " << algorithm_name << " ===" << std::endl;
-		current_vertex = shortest_path_graph->get_vertex(start_vertex->get_id());
+		std::cout << "[" << start_vertex->get_id() << "->" << kvp.first->get_id() << "] = ";
+		std::cout << kvp.second << " | ";
 	}
-
-	std::cout << "[" << start_vertex->get_id() << "->" << current_vertex->get_id() << "] = ";
-	std::cout << current_distance << " | ";
-
-	for(auto edge : current_vertex->get_edges())
-	{
-		print_shortest_path_result(
-			algorithm_name,
-			shortest_path_graph,
-			start_vertex,
-			edge->get_target(),
-			edge->get_weight() + current_distance);
-	}
-
-	if(root_of_the_tree)
-		std::cout << std::endl;
+	std::cout << std::endl << std::endl;
 }

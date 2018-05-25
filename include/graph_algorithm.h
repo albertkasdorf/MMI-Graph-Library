@@ -4,6 +4,7 @@
 #include <set>
 #include <functional>
 #include <stack>
+#include <map>
 
 namespace graph
 {
@@ -73,12 +74,22 @@ public:
 	//
 	// Dijkstra-Algorithm
 	//
-	void dijkstra(const graph*, const vertex*, graph*);
+	void dijkstra(
+		const graph*,
+		const vertex*,
+		graph*,
+		std::map<const vertex*, double>*,
+		bool*);
 
 	//
 	// Moore-Bellman-Ford-Algorithm
 	//
-	void moore_bellman_ford(const graph*, const vertex*, graph*);
+	void moore_bellman_ford(
+		const graph*,
+		const vertex*,
+		graph*,
+		std::map<const vertex*, double>*,
+		bool*);
 
 private:
 	void depth_first_search_recursive(

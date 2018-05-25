@@ -26,9 +26,6 @@ private:
 		const graph::vertex*);
 
 	void print_shortest_path_result(
-		const std::string&,
-		const graph::graph*,
 		const graph::vertex*,
-		const graph::vertex* = nullptr,
-		const double = 0);
+		const std::map<const graph::vertex*, double>*);
 };
