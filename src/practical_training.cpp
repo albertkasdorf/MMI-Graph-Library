@@ -377,3 +377,35 @@ void practical_training::print_shortest_path_result(
 	}
 	std::cout << std::endl << std::endl;
 }
+
+//
+// Fluss(0->7) = 4
+// Fluss2(0->5) = 5
+// G_1_2(0->7) = 0.735802
+//
+void practical_training::task05_maximum_flow(void)
+{
+	graph::loader graph_loader;
+	const graph::files graph_file = graph::files::Fluss;
+	const std::uint32_t source_id = 0;
+	const std::uint32_t target_id = 7;
+	const bool create_directed_graph = true;
+	graph::graph g;
+	const graph::vertex* source_vertex = nullptr;
+	const graph::vertex* target_vertex = nullptr;
+	graph::algorithm graph_algorithm;
+	double maximum_flow = 0.0;
+
+	std::cout << "Loading graph file: ";
+	std::cout << graph_loader.file_name_get(graph_file) << std::endl << std::endl;
+	graph_loader.load(graph_file, g, create_directed_graph);
+	source_vertex = g.get_vertex(source_id);
+	target_vertex = g.get_vertex(target_id);
+
+	std::cout << "=== Edmonds Karp ===" << std::endl;
+	graph_algorithm.edmonds_karp(&g, source_vertex, target_vertex, &maximum_flow);
+	std::cout << "Maximum flow between " << source_id << " and " << target_id;
+	std::cout << " is " << maximum_flow << std::endl;
+
+	return;
+}

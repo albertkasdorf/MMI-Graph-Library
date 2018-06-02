@@ -8,8 +8,12 @@
 #include <chrono>
 #include <iostream>
 #include <unordered_set>
+#include <unordered_map>
 #include <algorithm>
 #include <stdexcept>
+#include <sstream>
+#include <string>
+#include <list>
 
 #include <graph_vertex.h>
 #include <graph.h>
@@ -675,7 +679,7 @@ void algorithm::dijkstra(
 	// Build shortest path graph
 	for(auto kvp : predecessor)
 	{
-		// The start_vertex has not predecessor
+		// The start_vertex has no predecessor
 		if(kvp.second == nullptr)
 			continue;
 
@@ -761,7 +765,7 @@ void algorithm::moore_bellman_ford(
 	// Build shortest path graph
 	for(auto kvp : predecessor)
 	{
-		// The start_vertex has not predecessor
+		// The start_vertex has no predecessor
 		if(kvp.second == nullptr)
 			continue;
 
@@ -772,6 +776,177 @@ void algorithm::moore_bellman_ford(
 	}
 
 	return;
+}
+
+void algorithm::edmonds_karp(
+	const graph* full_graph,
+	const vertex* source_vertex,
+	const vertex* target_vertex,
+	double* maximum_flow)
+{
+	std::unordered_map<
+		const edge*,
+		double,
+		undirected_edge_hash,
+		undirected_edge_equal> flow_per_edge;
+
+
+	// Schritt 1: Setzen Sie f(e)=0 für alle Kanten e∈E.
+	for(auto edge : full_graph->get_edges())
+	{
+		flow_per_edge.insert(std::make_pair(edge, 0.0));
+	}
+
+	while(true)
+	{
+		graph residual_graph;
+		std::list<const edge*> shortest_path;
+		double shortest_path_min_value = std::numeric_limits<double>::infinity();
+
+
+		// Schritt 2: Bestimmen Sie G^f und u^f(e).
+		create_residual_graph(full_graph, &flow_per_edge, &residual_graph );
+
+		// Schritt 3: Konstruieren Sie einen kürzesten (s,t)-Weg p
+		// bzgl. der Anzahl der Kanten in G^f.
+		get_shortest_path(
+			&residual_graph,
+			source_vertex,
+			target_vertex,
+			&shortest_path,
+			&shortest_path_min_value );
+
+		// Falls keine Pfad existiert: STOPP.
+		if(shortest_path.empty())
+			break;
+
+		// Schritt 4: Verändern Sie den Fluss f entlang des Wegs p um
+		// gamma := min_e∈p u^f(e).
+		// => für jedes Pfad element in f suchen und den wert anpassen
+		for(auto edge_on_path : shortest_path)
+		{
+			auto iter = flow_per_edge.find(edge_on_path);
+
+			const edge* edge_from_flow = iter->first;
+			const double edge_value_from_flow = iter->second;
+
+			if(edge_from_flow->get_source()->get_id() == edge_on_path->get_source()->get_id())
+			{
+				flow_per_edge[edge_on_path] =
+					edge_value_from_flow + shortest_path_min_value;
+			}
+			else
+			{
+				flow_per_edge[edge_on_path] =
+					edge_value_from_flow - shortest_path_min_value;
+			}
+		}
+
+		// Schritt 5: Gehen Sie zu Schritt 2.
+	}
+
+	*maximum_flow = 0.0;
+	for(auto edge_from_source : source_vertex->get_edges())
+	{
+		*maximum_flow += flow_per_edge[edge_from_source];
+	}
+
+	return;
+}
+
+void algorithm::create_residual_graph(
+	const graph* full_graph,
+	const std::unordered_map<
+		const edge*,
+		double,
+		undirected_edge_hash,
+		undirected_edge_equal>* flow_per_edge,
+	graph* residual_graph)
+{
+	for(auto edge : full_graph->get_edges())
+	{
+		const std::uint32_t source_id = edge->get_source()->get_id();
+		const std::uint32_t target_id = edge->get_target()->get_id();
+
+		const double edge_capacity = edge->get_weight();
+		const double edge_value = flow_per_edge->at(edge);
+
+		const double uf_forward_edge = edge_capacity - edge_value;
+		const double uf_backward_edge = edge_value;
+
+		if( uf_forward_edge > 0.0 )
+		{
+			// Insert forward edge
+			residual_graph->add_directed_edge(
+				source_id, target_id, uf_forward_edge);
+		}
+
+		if(uf_backward_edge > 0.0)
+		{
+			// Insert backward edge
+			residual_graph->add_directed_edge(
+				target_id, source_id, uf_backward_edge);
+		}
+	}
+}
+
+void algorithm::get_shortest_path(
+	const graph* residual_graph,
+	const vertex* source_vertex,
+	const vertex* target_vertex,
+	std::list<const edge*>* shortest_path,
+	double* shortest_path_min_value)
+{
+	std::deque<const vertex*> frontier;
+	std::set<const vertex*, compare_vertex_id> lookup;
+	std::map<const vertex*, const edge*> predecessor;
+
+
+	source_vertex = residual_graph->get_vertex(source_vertex->get_id());
+	target_vertex = residual_graph->get_vertex(target_vertex->get_id());
+
+	frontier.push_back(source_vertex);
+	lookup.insert(source_vertex);
+	predecessor.insert(std::make_pair(source_vertex, nullptr));
+
+	while(!frontier.empty())
+	{
+		const vertex* vertex_current = frontier.front();
+		frontier.pop_front();
+
+		for(auto current_edge : vertex_current->get_edges())
+		{
+			const vertex* target_vertex_of_edge = current_edge->get_target();
+
+			const bool vertex_processed = lookup.count(target_vertex_of_edge) != 0;
+			if(vertex_processed)
+				continue;
+
+			frontier.push_back(target_vertex_of_edge);
+			lookup.insert(target_vertex_of_edge);
+			predecessor.insert(std::make_pair(target_vertex_of_edge, current_edge));
+
+			if(target_vertex_of_edge->get_id() == target_vertex->get_id())
+			{
+				frontier.clear();
+				break;
+			}
+
+			continue;
+		}
+	}
+
+	for(const vertex* iter = target_vertex;
+		const edge* edge_to_predecessor = predecessor[iter];
+		iter = edge_to_predecessor->get_source())
+	{
+		const double edge_capacity = edge_to_predecessor->get_weight();
+
+		shortest_path->push_front(edge_to_predecessor);
+
+		*shortest_path_min_value = std::min(
+			*shortest_path_min_value, edge_capacity);
+	}
 }
 
 }

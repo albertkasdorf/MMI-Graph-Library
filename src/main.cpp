@@ -8,7 +8,8 @@ int main()
 		//pt.task01_bfs_dfs();
 		//pt.task02_prim_kruskal();
 		//pt.task03_tsp();
-		pt.task04_shortest_path();
+		//pt.task04_shortest_path();
+		pt.task05_maximum_flow();
 	}
 	return 0;
 }

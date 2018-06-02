@@ -28,6 +28,20 @@ struct compare_edge_weight
 
 //------------------------------------------------------------------------------
 
+struct undirected_edge_hash
+{
+	std::size_t operator()(const edge* edge) const;
+};
+
+//------------------------------------------------------------------------------
+
+struct undirected_edge_equal
+{
+	bool operator()(const edge* lhs, const edge* rhs) const;
+};
+
+//------------------------------------------------------------------------------
+
 //struct compare_edge_ids
 //{
 //	bool operator()(const edge& lhs, const edge& rhs) const;

@@ -16,6 +16,7 @@ public:
 	void task02_prim_kruskal(void);
 	void task03_tsp(void);
 	void task04_shortest_path(void);
+	void task05_maximum_flow(void);
 
 private:
 	void print_tsp_result(

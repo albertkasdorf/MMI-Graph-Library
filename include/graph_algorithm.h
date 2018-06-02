@@ -5,6 +5,8 @@
 #include <functional>
 #include <stack>
 #include <map>
+#include <unordered_map>
+#include <list>
 
 namespace graph
 {
@@ -12,6 +14,8 @@ class graph;
 class vertex;
 class edge;
 class compare_vertex_id;
+struct undirected_edge_hash;
+struct undirected_edge_equal;
 
 class algorithm
 {
@@ -91,6 +95,11 @@ public:
 		std::map<const vertex*, double>*,
 		bool*);
 
+	//
+	// Edmonds-Karp
+	//
+	void edmonds_karp(const graph*, const vertex*, const vertex*, double*);
+
 private:
 	void depth_first_search_recursive(
 		const graph*,
@@ -119,6 +128,28 @@ private:
 		std::set<const vertex*>* const,
 		std::stack<const edge*>* const,
 		double* const);
+
+	//
+	//
+	//
+	void create_residual_graph(
+		const graph*,
+		const std::unordered_map<
+			const edge*,
+			double,
+			undirected_edge_hash,
+			undirected_edge_equal>*,
+		graph*);
+
+	//
+	//
+	//
+	void get_shortest_path(
+		const graph*,
+		const vertex*,
+		const vertex*,
+		std::list<const edge*>*,
+		double*);
 };
 
 }

@@ -51,6 +51,8 @@ std::string loader::file_name_get(const files& graph_file)
 	case files::Wege1: file_name = "Wege1.txt"; break;
 	case files::Wege2: file_name = "Wege2.txt"; break;
 	case files::Wege3: file_name = "Wege3.txt"; break;
+	case files::Fluss: file_name = "Fluss.txt"; break;
+	case files::Fluss2: file_name ="Fluss2.txt"; break;
 	default: assert(false);
 	}
 
@@ -94,6 +96,8 @@ void loader::load(
 	case files::Wege1:
 	case files::Wege2:
 	case files::Wege3:
+	case files::Fluss:
+	case files::Fluss2:
 		load_edge_list_weighted(file_name, graph, create_directed_graph);
 		break;
 	default: assert(false);

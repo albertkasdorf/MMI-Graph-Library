@@ -29,6 +29,8 @@ enum class files
 	Wege1,
 	Wege2,
 	Wege3,
+	Fluss,
+	Fluss2,
 };
 
 }
