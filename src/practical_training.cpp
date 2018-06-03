@@ -386,7 +386,7 @@ void practical_training::print_shortest_path_result(
 void practical_training::task05_maximum_flow(void)
 {
 	graph::loader graph_loader;
-	const graph::files graph_file = graph::files::Fluss;
+	const graph::files graph_file = graph::files::G_1_2;
 	const std::uint32_t source_id = 0;
 	const std::uint32_t target_id = 7;
 	const bool create_directed_graph = true;

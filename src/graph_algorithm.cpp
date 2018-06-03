@@ -830,6 +830,7 @@ void algorithm::edmonds_karp(
 			const edge* edge_from_flow = iter->first;
 			const double edge_value_from_flow = iter->second;
 
+			// Edges pointing in the same direction?
 			if(edge_from_flow->get_source()->get_id() == edge_on_path->get_source()->get_id())
 			{
 				flow_per_edge[edge_on_path] =
@@ -868,10 +869,15 @@ void algorithm::create_residual_graph(
 		const std::uint32_t source_id = edge->get_source()->get_id();
 		const std::uint32_t target_id = edge->get_target()->get_id();
 
+		// u(e)
 		const double edge_capacity = edge->get_weight();
+		// f(e)
 		const double edge_value = flow_per_edge->at(edge);
 
+		// residual_capacity
+		// Forward: u^f(e) = u(e) - f(e)
 		const double uf_forward_edge = edge_capacity - edge_value;
+		// Backward: u^f(e) = f(e)
 		const double uf_backward_edge = edge_value;
 
 		if( uf_forward_edge > 0.0 )
@@ -926,6 +932,7 @@ void algorithm::get_shortest_path(
 			lookup.insert(target_vertex_of_edge);
 			predecessor.insert(std::make_pair(target_vertex_of_edge, current_edge));
 
+			// Have we found the goal?
 			if(target_vertex_of_edge->get_id() == target_vertex->get_id())
 			{
 				frontier.clear();
@@ -936,10 +943,12 @@ void algorithm::get_shortest_path(
 		}
 	}
 
+	const edge* edge_to_predecessor = nullptr;
 	for(const vertex* iter = target_vertex;
-		const edge* edge_to_predecessor = predecessor[iter];
+		edge_to_predecessor = predecessor[iter];
 		iter = edge_to_predecessor->get_source())
 	{
+		// residual_capacity
 		const double edge_capacity = edge_to_predecessor->get_weight();
 
 		shortest_path->push_front(edge_to_predecessor);
