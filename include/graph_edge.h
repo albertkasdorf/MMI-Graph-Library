@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <memory>
+#include <cassert>
 
 namespace graph
 {
@@ -19,11 +20,24 @@ private:
 public:
 	edge(void);
 	edge(const edge&) = delete;
-	~edge();
+	virtual ~edge();
 
 public:
-	const vertex* get_source(void) const;
-	const vertex* get_target(void) const;
+	template<typename V = vertex>
+	const V* get_source(void) const
+	{
+		const V* result = dynamic_cast<const V*>(_source);
+		assert(result);
+		return result;
+	}
+
+	template<typename V = vertex>
+	const V* get_target(void) const
+	{
+		const V* result = dynamic_cast<const V*>(_target);
+		assert(result);
+		return result;
+	}
 
 	void set_source(const vertex*);
 	void set_target(const vertex*);

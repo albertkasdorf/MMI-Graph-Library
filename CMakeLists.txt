@@ -7,7 +7,9 @@ set(CMAKE_CXX_STANDARD 14)
 set(HEADERS
 	include/graph_files.h
 	include/graph_vertex.h
+	include/graph_vertex_with_balance.h
 	include/graph_edge.h
+	include/graph_edge_with_cost_capacity.h
 	include/graph.h
 	include/graph_files.h
 	include/graph_loader.h
@@ -22,8 +24,10 @@ set(SOURCES
 	src/graph_loader.cpp
 	src/graph_iterator.cpp
 	src/graph_edge.cpp
+	src/graph_edge_with_cost_capacity.cpp
 	src/practical_training.cpp
 	src/graph_vertex.cpp
+	src/graph_vertex_with_balance.cpp
 	src/graph_comparer.cpp)
 
 add_custom_target(Headers SOURCES ${HEADERS})

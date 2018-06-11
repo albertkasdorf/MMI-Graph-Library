@@ -3,6 +3,8 @@
 #include <cassert>
 #include <graph_vertex.h>
 #include <graph_edge.h>
+#include <graph_vertex_with_balance.h>
+#include <graph_edge_with_cost_capacity.h>
 
 
 namespace graph
@@ -23,6 +25,16 @@ void graph::add_vertex(const uint32_t id)
 	if(vertex_not_found)
 	{
 		vertices[hash] = std::make_shared<vertex>(id);
+	}
+}
+
+void graph::add_vertex(const uint32_t id, const double balance)
+{
+	const std::size_t hash = vertex_with_balance::create_hash(id);
+	const bool vertex_not_found = vertices.count(hash) == 0;
+	if(vertex_not_found)
+	{
+		vertices[hash] = std::make_shared<vertex_with_balance>(id, balance);
 	}
 }
 
@@ -199,12 +211,29 @@ void graph::add_directed_edge(
 	edges.insert(std::make_pair(hash_src_edge, src_tgt_edge));
 }
 
-
-std::pair<vertex_iterator, vertex_iterator> graph::get_vertices(void) const
+void graph::add_directed_edge(
+	const uint32_t source_id,
+	const uint32_t target_id,
+	const double cost,
+	const double capacity)
 {
-	return std::make_pair(
-		vertex_iterator(vertices.cbegin()),
-		vertex_iterator(vertices.end()));
+	// create source vertex if not found
+	add_vertex(source_id);
+	add_vertex(target_id);
+
+	vertex* source = get_vertex_internal(source_id);
+	vertex* target = get_vertex_internal(target_id);
+
+	auto src_tgt_edge = std::make_shared<edge_with_cost_capacity>(cost, capacity);
+
+	src_tgt_edge->set_source(source);
+	src_tgt_edge->set_target(target);
+
+	source->add_edge(src_tgt_edge.get());
+
+	const std::size_t hash_src_edge = src_tgt_edge->get_hash();
+
+	edges.insert(std::make_pair(hash_src_edge, src_tgt_edge));
 }
 
 void graph::remove_edge(const edge& edge_remove)
@@ -269,13 +298,6 @@ void graph::remove_edge(const edge& edge_remove)
 //		edges.erase(i);
 //		break;
 //	}
-}
-
-std::pair<edge_iterator_on_multimap, edge_iterator_on_multimap> graph::get_edges(void) const
-{
-	return std::make_pair(
-		edge_iterator_on_multimap(edges.cbegin()),
-		edge_iterator_on_multimap(edges.cend()));
 }
 
 std::uint32_t graph::get_edge_count(void) const

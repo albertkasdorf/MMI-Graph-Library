@@ -53,6 +53,11 @@ std::string loader::file_name_get(const files& graph_file)
 	case files::Wege3: file_name = "Wege3.txt"; break;
 	case files::Fluss: file_name = "Fluss.txt"; break;
 	case files::Fluss2: file_name ="Fluss2.txt"; break;
+	case files::Kostenminimal1: file_name ="Kostenminimal1.txt"; break;
+	case files::Kostenminimal2: file_name ="Kostenminimal2.txt"; break;
+	case files::Kostenminimal3: file_name ="Kostenminimal3.txt"; break;
+	case files::Kostenminimal4: file_name ="Kostenminimal4.txt"; break;
+	case files::Kostenminimal5: file_name ="Kostenminimal5.txt"; break;
 	default: assert(false);
 	}
 
@@ -99,6 +104,13 @@ void loader::load(
 	case files::Fluss:
 	case files::Fluss2:
 		load_edge_list_weighted(file_name, graph, create_directed_graph);
+		break;
+	case files::Kostenminimal1:
+	case files::Kostenminimal2:
+	case files::Kostenminimal3:
+	case files::Kostenminimal4:
+	case files::Kostenminimal5:
+		load_edge_list_minimum_cost_flow(file_name, graph);
 		break;
 	default: assert(false);
 	}
@@ -195,6 +207,41 @@ void loader::load_edge_list_weighted(
 		{
 			graph.add_undirected_edge(source_id, target_id, weight);
 		}
+	}
+
+	assert(graph.get_vertex_count() == vertex_count);
+}
+
+void loader::load_edge_list_minimum_cost_flow(
+	const std::string& file_name,
+	graph& graph)
+{
+	std::fstream fs;
+	std::uint32_t vertex_count = 0;
+
+	fs.open(file_name.c_str());
+	fs >> vertex_count;
+
+	// create vertices
+	for(std::uint32_t i = 0; i < vertex_count; ++i)
+	{
+		double balance = {};
+
+		fs >> balance;
+		graph.add_vertex(i, balance);
+	}
+
+	// create edges
+	while(true)
+	{
+		std::uint32_t source_id = {}, target_id = {};
+		double cost = {}, capacity = {};
+
+		fs >> source_id >> target_id >> cost >> capacity;
+		if(fs.eof())
+			break;
+
+		graph.add_directed_edge(source_id, target_id, cost, capacity);
 	}
 
 	assert(graph.get_vertex_count() == vertex_count);

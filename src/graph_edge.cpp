@@ -21,16 +21,6 @@ edge::~edge()
 {
 }
 
-const vertex* edge::get_source(void) const
-{
-	return _source;
-}
-
-const vertex* edge::get_target(void) const
-{
-	return _target;
-}
-
 void edge::set_source(const vertex* new_vertex)
 {
 	_source = new_vertex;

@@ -14,6 +14,8 @@
 #include <graph_edge.h>
 #include <graph_vertex.h>
 #include <graph_comparer.h>
+#include <graph_vertex_with_balance.h>
+#include <graph_edge_with_cost_capacity.h>
 
 
 practical_training::practical_training()
@@ -67,47 +69,47 @@ void practical_training::task00_debugging(void)
 	 */
 
 
-	std::shared_ptr<graph::vertex> v = std::make_shared<graph::vertex>(8045);
-	std::shared_ptr<const graph::vertex> cv = v;
-	v->set_id(45);
-	graph::vertex* pv = v.get();
-	const graph::vertex* pcv = cv.get();
-	const graph::vertex& rpc = *cv;
+//	std::shared_ptr<graph::vertex> v = std::make_shared<graph::vertex>(8045);
+//	std::shared_ptr<const graph::vertex> cv = v;
+//	v->set_id(45);
+//	graph::vertex* pv = v.get();
+//	const graph::vertex* pcv = cv.get();
+//	const graph::vertex& rpc = *cv;
 
-	//graph::edge* pbla = nullptr;
-	//graph::edge& rbla = *pbla;
+//	//graph::edge* pbla = nullptr;
+//	//graph::edge& rbla = *pbla;
 
 
-	std::hash<std::string> hasher;
-	auto h1 = hasher("");
-	auto h3 = hasher("12-34");
-	auto h2 = hasher("34-12");
+//	std::hash<std::string> hasher;
+//	auto h1 = hasher("");
+//	auto h3 = hasher("12-34");
+//	auto h2 = hasher("34-12");
 
-	std::multimap<int, std::string> mm;
+//	std::multimap<int, std::string> mm;
 
-	mm.insert(std::make_pair(45, "Hello"));
-	mm.insert(std::make_pair(45, "Hello2"));
+//	mm.insert(std::make_pair(45, "Hello"));
+//	mm.insert(std::make_pair(45, "Hello2"));
 
-	auto count_of_45 = mm.count(45);
+//	auto count_of_45 = mm.count(45);
 
-	auto wtf = mm.find(45);
-	//for(auto element : mm.find(45))
-	//	continue;
+//	auto wtf = mm.find(45);
+//	//for(auto element : mm.find(45))
+//	//	continue;
 
-	std::stringstream ss;
-	ss << 45 << "-" << 67;
-	const std::string combined = ss.str();
+//	std::stringstream ss;
+//	ss << 45 << "-" << 67;
+//	const std::string combined = ss.str();
 
-	graph::loader gl;
-	graph::graph gg_full, gg_res_bfs, gg_res_dfs;
-	graph::algorithm ga;
-	const graph::vertex* gv_start;
+//	graph::loader gl;
+//	graph::graph gg_full, gg_res_bfs, gg_res_dfs;
+//	graph::algorithm ga;
+//	const graph::vertex* gv_start;
 
-	gl.load(graph::files::Graph1, gg_full);
+//	gl.load(graph::files::Graph1, gg_full);
 
-	gv_start = gg_full.get_vertex(0);
-	ga.breadth_first_search(&gg_full, gv_start, &gg_res_bfs);
-	ga.depth_first_search(&gg_full, gv_start, &gg_res_dfs);
+//	gv_start = gg_full.get_vertex(0);
+//	ga.breadth_first_search(&gg_full, gv_start, &gg_res_bfs);
+//	ga.depth_first_search(&gg_full, gv_start, &gg_res_dfs);
 
 
 	return;
@@ -408,4 +410,53 @@ void practical_training::task05_maximum_flow(void)
 	std::cout << " is " << maximum_flow << std::endl;
 
 	return;
+}
+
+//
+// In Klammern stehen die Kosten eines kostenminimalen Flusses.
+// Kostenminimal1.txt (3)
+// Kostenminimal2.txt (kein b-Fluss möglich)
+// Kostenminimal3.txt (1537)
+// Kostenminimal4.txt (0)
+// Kostenminimal5.txt (0)
+//
+void practical_training::task06_minimum_cost_flow(void)
+{
+	graph::loader graph_loader;
+	const graph::files graph_file = graph::files::Kostenminimal1;
+	graph::graph g;
+	graph::algorithm graph_algorithm;
+
+	std::cout << "Loading graph file: ";
+	std::cout << graph_loader.file_name_get(graph_file) << std::endl << std::endl;
+	graph_loader.load(graph_file, g);
+
+//	for(auto edge : g.get_edges<graph::edge>())
+//	{
+//		edge->get_source();
+//		continue;
+//	}
+//	g.get_edges<graph::edge_with_cost_capacity>();
+
+//	for(auto vertex_current : g.get_vertices<graph::vertex_with_balance>())
+//	{
+//		vertex_current->get_balance();
+//		for(auto edge_current : vertex_current->get_edges())
+//		{
+//			auto source1 = edge_current->get_source();
+//			auto source2 = edge_current->get_source<graph::vertex_with_balance>();
+
+//			auto target1 = edge_current->get_target();
+//			auto target2 = edge_current->get_target<graph::vertex_with_balance>();
+
+//			auto balance = source2->get_balance();
+
+//			continue;
+//		}
+
+//		for(auto edge_current : vertex_current->get_edges<graph::edge_with_cost_capacity>())
+//		{
+//			continue;
+//		}
+//	}
 }

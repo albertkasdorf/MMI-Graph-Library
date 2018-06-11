@@ -22,11 +22,17 @@ public:
 
 private:
 	void load_adjacent_matrix(const std::string& file_name, graph& graph);
+
 	void load_edge_list(const std::string& file_name, graph& graph);
+
 	void load_edge_list_weighted(
 		const std::string& file_name,
 		graph& graph,
 		const bool create_directed_graph);
+
+	void load_edge_list_minimum_cost_flow(
+		const std::string& file_name,
+		graph& graph);
 };
 
 }

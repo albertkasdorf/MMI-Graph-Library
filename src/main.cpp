@@ -10,6 +10,7 @@ int main()
 		//pt.task03_tsp();
 		//pt.task04_shortest_path();
 		pt.task05_maximum_flow();
+		pt.task06_minimum_cost_flow();
 	}
 	return 0;
 }

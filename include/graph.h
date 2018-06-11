@@ -30,6 +30,11 @@ public:
 	void add_vertex(const uint32_t);
 
 	//
+	// Add a balanced vertex to the graph.
+	//
+	void add_vertex(const uint32_t, const double);
+
+	//
 	// Add a new edge to the graph.
 	// Remark:
 	// - Vertices created if they not exist in graph.
@@ -54,10 +59,21 @@ public:
 		const uint32_t&, const uint32_t&, const double*);
 
 	//
+	// Add a new directed edge to the graph. (With cost and capacity)
+	//
+	void add_directed_edge(
+		const uint32_t, const uint32_t, const double, const double);
+
+	//
 	// Get all edges of the graph.
 	//
-	std::pair<edge_iterator_on_multimap, edge_iterator_on_multimap> get_edges(void) const;
-
+	template<typename E = edge>
+	std::pair<edge_iterator_on_multimap<E>, edge_iterator_on_multimap<E>> get_edges(void) const
+	{
+		return std::make_pair(
+			edge_iterator_on_multimap<E>(edges.cbegin()),
+			edge_iterator_on_multimap<E>(edges.cend()));
+	}
 
 	//
 	// Remove an edge from the graph.
@@ -66,21 +82,26 @@ public:
 	//
 	void remove_edge(const edge&);
 
-
-
-
 	//
 	// Return a copy of the vertex with the provided vertex id.
 	//
 	const vertex* get_vertex(const std::uint32_t) const;
+
 	//
 	// Return the number of vertices.
 	//
 	std::uint32_t get_vertex_count(void) const;
+
 	//
 	// Return all vertices of the graph.
 	//
-	std::pair<vertex_iterator, vertex_iterator> get_vertices(void) const;
+	template<typename V = vertex>
+	std::pair<vertex_iterator<V>, vertex_iterator<V>> get_vertices(void) const
+	{
+		return std::make_pair(
+			vertex_iterator<V>(vertices.cbegin()),
+			vertex_iterator<V>(vertices.end()));
+	}
 
 	//
 	// Returns the number of edges.
@@ -91,9 +112,6 @@ public:
 	// Returns the edge of the two vertices.
 	//
 	const edge* get_edge(const vertex*, const vertex*) const;
-
-
-
 
 
 private:
