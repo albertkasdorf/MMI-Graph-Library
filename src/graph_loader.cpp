@@ -129,9 +129,9 @@ void loader::load_adjacent_matrix(const std::string& file_name, graph& graph)
 		graph.add_vertex(i);
 
 	// create edges
-	for(auto row = 0; row < vertex_count; row++)
+	for(std::size_t row = 0; row < vertex_count; row++)
 	{
-		for(auto col = 0; col < vertex_count; col++)
+		for(std::size_t col = 0; col < vertex_count; col++)
 		{
 			bool adjacent = {};
 

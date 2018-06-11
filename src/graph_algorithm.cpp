@@ -945,7 +945,7 @@ void algorithm::get_shortest_path(
 
 	const edge* edge_to_predecessor = nullptr;
 	for(const vertex* iter = target_vertex;
-		edge_to_predecessor = predecessor[iter];
+		(edge_to_predecessor = predecessor[iter]);
 		iter = edge_to_predecessor->get_source())
 	{
 		// residual_capacity
