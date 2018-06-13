@@ -31,6 +31,7 @@ enum class files
 	Wege3,
 	Fluss,
 	Fluss2,
+	Fluss3,
 	Kostenminimal1,
 	Kostenminimal2,
 	Kostenminimal3,

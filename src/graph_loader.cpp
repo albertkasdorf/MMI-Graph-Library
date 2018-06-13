@@ -53,6 +53,7 @@ std::string loader::file_name_get(const files& graph_file)
 	case files::Wege3: file_name = "Wege3.txt"; break;
 	case files::Fluss: file_name = "Fluss.txt"; break;
 	case files::Fluss2: file_name ="Fluss2.txt"; break;
+	case files::Fluss3: file_name ="Fluss3.txt"; break;
 	case files::Kostenminimal1: file_name ="Kostenminimal1.txt"; break;
 	case files::Kostenminimal2: file_name ="Kostenminimal2.txt"; break;
 	case files::Kostenminimal3: file_name ="Kostenminimal3.txt"; break;
@@ -103,6 +104,7 @@ void loader::load(
 	case files::Wege3:
 	case files::Fluss:
 	case files::Fluss2:
+	case files::Fluss3:
 		load_edge_list_weighted(file_name, graph, create_directed_graph);
 		break;
 	case files::Kostenminimal1:

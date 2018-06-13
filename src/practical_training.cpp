@@ -382,7 +382,8 @@ void practical_training::print_shortest_path_result(
 
 //
 // Fluss(0->7) = 4
-// Fluss2(0->5) = 5
+// Fluss2(0->7) = 5
+// Fluss3(0->5) = 5
 // G_1_2(0->7) = 0.735802
 //
 void practical_training::task05_maximum_flow(void)
