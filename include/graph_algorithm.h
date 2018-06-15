@@ -99,6 +99,22 @@ public:
 	// Edmonds-Karp
 	//
 	void edmonds_karp(const graph*, const vertex*, const vertex*, double*);
+	void edmonds_karp(
+		const graph*,
+		const vertex*,
+		const vertex*,
+		double*,
+		std::function<double(const edge*)>);
+
+	//
+	// Cycle Cancelling Algorithm
+	//
+	void cycle_cancelling(const graph*, bool*, double*);
+
+	//
+	// Successive Shortest Path Algorithm
+	//
+	void successive_shortest_path(const graph*, bool*, double*);
 
 private:
 	void depth_first_search_recursive(
@@ -139,7 +155,8 @@ private:
 			double,
 			undirected_edge_hash,
 			undirected_edge_equal>*,
-		graph*);
+		graph*,
+		std::function<double(const edge*)> capacity_of_edge);
 
 	//
 	//
@@ -149,7 +166,8 @@ private:
 		const vertex*,
 		const vertex*,
 		std::list<const edge*>*,
-		double*);
+		double*,
+		std::function<double(const edge*)> capacity_of_edge);
 };
 
 }

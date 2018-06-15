@@ -425,39 +425,20 @@ void practical_training::task06_minimum_cost_flow(void)
 {
 	graph::loader graph_loader;
 	const graph::files graph_file = graph::files::Kostenminimal1;
-	graph::graph g;
-	graph::algorithm graph_algorithm;
+	graph::graph full_graph;
+	graph::algorithm algorithm;
+	bool minimum_cost_flow_found = false;
+	double minimum_cost_flow = 0.0;
 
 	std::cout << "Loading graph file: ";
 	std::cout << graph_loader.file_name_get(graph_file) << std::endl << std::endl;
-	graph_loader.load(graph_file, g);
+	graph_loader.load(graph_file, full_graph);
 
-//	for(auto edge : g.get_edges<graph::edge>())
-//	{
-//		edge->get_source();
-//		continue;
-//	}
-//	g.get_edges<graph::edge_with_cost_capacity>();
-
-//	for(auto vertex_current : g.get_vertices<graph::vertex_with_balance>())
-//	{
-//		vertex_current->get_balance();
-//		for(auto edge_current : vertex_current->get_edges())
-//		{
-//			auto source1 = edge_current->get_source();
-//			auto source2 = edge_current->get_source<graph::vertex_with_balance>();
-
-//			auto target1 = edge_current->get_target();
-//			auto target2 = edge_current->get_target<graph::vertex_with_balance>();
-
-//			auto balance = source2->get_balance();
-
-//			continue;
-//		}
-
-//		for(auto edge_current : vertex_current->get_edges<graph::edge_with_cost_capacity>())
-//		{
-//			continue;
-//		}
-//	}
+	std::cout << "=== Cycle Cancelling ===" << std::endl;
+	algorithm.cycle_cancelling(
+		&full_graph, &minimum_cost_flow_found, &minimum_cost_flow);
+	if(minimum_cost_flow_found)
+		std::cout << "Minimal cost flow is " << minimum_cost_flow << std::endl;
+	else
+		std::cout << "Minimal cost flow not found." << std::endl;
 }

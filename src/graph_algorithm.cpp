@@ -784,6 +784,22 @@ void algorithm::edmonds_karp(
 	const vertex* target_vertex,
 	double* maximum_flow)
 {
+	std::function<double(const edge*)> capacity_of_edge = [](const edge* e)
+	{
+		return e->get_weight();
+	};
+
+	edmonds_karp(
+		full_graph, source_vertex, target_vertex, maximum_flow, capacity_of_edge);
+}
+
+void algorithm::edmonds_karp(
+	const graph* full_graph,
+	const vertex* source_vertex,
+	const vertex* target_vertex,
+	double* maximum_flow,
+	std::function<double(const edge*)> capacity_of_edge)
+{
 	std::unordered_map<
 		const edge*,
 		double,
@@ -805,7 +821,7 @@ void algorithm::edmonds_karp(
 
 
 		// Schritt 2: Bestimmen Sie G^f und u^f(e).
-		create_residual_graph(full_graph, &flow_per_edge, &residual_graph );
+		create_residual_graph(full_graph, &flow_per_edge, &residual_graph, capacity_of_edge);
 
 		// Schritt 3: Konstruieren Sie einen kürzesten (s,t)-Weg p
 		// bzgl. der Anzahl der Kanten in G^f.
@@ -814,7 +830,8 @@ void algorithm::edmonds_karp(
 			source_vertex,
 			target_vertex,
 			&shortest_path,
-			&shortest_path_min_value );
+			&shortest_path_min_value,
+			capacity_of_edge);
 
 		// Falls keine Pfad existiert: STOPP.
 		if(shortest_path.empty())
@@ -862,7 +879,8 @@ void algorithm::create_residual_graph(
 		double,
 		undirected_edge_hash,
 		undirected_edge_equal>* flow_per_edge,
-	graph* residual_graph)
+	graph* residual_graph,
+	std::function<double(const edge*)> capacity_of_edge)
 {
 	for(auto edge : full_graph->get_edges())
 	{
@@ -870,7 +888,7 @@ void algorithm::create_residual_graph(
 		const std::uint32_t target_id = edge->get_target()->get_id();
 
 		// u(e)
-		const double edge_capacity = edge->get_weight();
+		const double edge_capacity = capacity_of_edge(edge);
 		// f(e)
 		const double edge_value = flow_per_edge->at(edge);
 
@@ -901,7 +919,8 @@ void algorithm::get_shortest_path(
 	const vertex* source_vertex,
 	const vertex* target_vertex,
 	std::list<const edge*>* shortest_path,
-	double* shortest_path_min_value)
+	double* shortest_path_min_value,
+	std::function<double(const edge*)> capacity_of_edge)
 {
 	std::deque<const vertex*> frontier;
 	std::set<const vertex*, compare_vertex_id> lookup;
@@ -949,13 +968,83 @@ void algorithm::get_shortest_path(
 		iter = edge_to_predecessor->get_source())
 	{
 		// residual_capacity
-		const double edge_capacity = edge_to_predecessor->get_weight();
+		const double edge_capacity = capacity_of_edge(edge_to_predecessor);
 
 		shortest_path->push_front(edge_to_predecessor);
 
 		*shortest_path_min_value = std::min(
 			*shortest_path_min_value, edge_capacity);
 	}
+}
+
+void algorithm::cycle_cancelling(
+	const graph* full_graph,
+	bool* minimum_cost_flow_found,
+	double* minimum_cost_flow)
+{
+	*minimum_cost_flow_found = false;
+	*minimum_cost_flow = 0.0;
+
+	// Schritt 1:
+	// Berechnung eines b-Flusses. Wenn kein b-Fluss gefunden werden kann,
+	// terminiert der Algorithmus ohne Ergebnis.
+	// - Add common source and target
+	// - Run edmonds_karp between s* and t*
+	// - maximum_flow == Sum of b(v) with b(v) > 0
+
+	// Schritt 2:
+	// Bestimmung des Residualgraphen, der Residualkapazitäten und der
+	// Residualkosten.
+	// - check
+
+	// Schritt 3:
+	// Konstruieren eines f-augmentierenden Zykels Z in G f mit negativen Kosten.
+	// Falls keiner existiert: STOPP
+	// -
+
+	// Schritt 4:
+	// Verändern des b-Flusses entlang des Zykels um γ ≔ min e∈Z u f (e).
+
+	// Schritt 5:
+	// Ab Schritt 2 wiederholen.
+}
+
+void algorithm::successive_shortest_path(
+	const graph* full_graph,
+	bool* minimum_cost_flow_found,
+	double* minimum_cost_flow)
+{
+	*minimum_cost_flow_found = false;
+	*minimum_cost_flow = 0.0;
+
+	//	for(auto edge : g.get_edges<graph::edge>())
+	//	{
+	//		edge->get_source();
+	//		continue;
+	//	}
+	//	g.get_edges<graph::edge_with_cost_capacity>();
+
+	//	for(auto vertex_current : g.get_vertices<graph::vertex_with_balance>())
+	//	{
+	//		vertex_current->get_balance();
+	//		for(auto edge_current : vertex_current->get_edges())
+	//		{
+	//			auto source1 = edge_current->get_source();
+	//			auto source2 = edge_current->get_source<graph::vertex_with_balance>();
+
+	//			auto target1 = edge_current->get_target();
+	//			auto target2 = edge_current->get_target<graph::vertex_with_balance>();
+
+	//			auto balance = source2->get_balance();
+
+	//			continue;
+	//		}
+
+	//		for(auto edge_current : vertex_current->get_edges<graph::edge_with_cost_capacity>())
+	//		{
+	//			continue;
+	//		}
+	//	}
 }
 
 }
