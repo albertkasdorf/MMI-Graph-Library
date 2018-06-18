@@ -13,8 +13,6 @@ edge::edge()
 	_source = nullptr;
 	_target = nullptr;
 	_twin = nullptr;
-	_has_weight = false;
-	_weight = 0.0;
 }
 
 edge::~edge()
@@ -53,19 +51,64 @@ void edge::set_twin(const edge* new_twin)
 
 bool edge::has_weight(void) const
 {
-	return _has_weight;
+	return _weight != nullptr;
 }
 
 double edge::get_weight(void) const
 {
 	assert(has_weight());
-	return _weight;
+	return *_weight;
 }
 
-void edge::set_weight(const double new_weight)
+void edge::set_weight(const double value)
 {
-	_has_weight = true;
-	_weight = new_weight;
+	_weight = std::make_unique<double>(value);
+}
+
+bool edge::has_cost(void) const
+{
+	return _cost != nullptr;
+}
+
+double edge::get_cost(void) const
+{
+	assert(has_cost());
+	return *_cost;
+}
+
+void edge::set_cost(const double value)
+{
+	_cost = std::make_unique<double>(value);
+}
+
+bool edge::has_capacity(void) const
+{
+	return _capacity != nullptr;
+}
+
+double edge::get_capacity(void) const
+{
+	assert(has_capacity());
+	return *_capacity;
+}
+
+void edge::set_capacity(const double value)
+{
+	_capacity = std::make_unique<double>(value);
+}
+
+std::shared_ptr<edge> edge::create_copy(void) const
+{
+	std::shared_ptr<edge> e = std::make_shared<edge>();
+
+	if(has_weight())
+		e->set_weight(get_weight());
+	if(has_capacity())
+		e->set_capacity(get_capacity());
+	if(has_cost())
+		e->set_cost(get_cost());
+
+	return e;
 }
 
 std::size_t edge::get_hash(void) const

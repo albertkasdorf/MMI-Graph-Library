@@ -103,6 +103,11 @@ public:
 		const graph*,
 		const vertex*,
 		const vertex*,
+		std::unordered_map<
+			const edge*,
+			double,
+			undirected_edge_hash,
+			undirected_edge_equal>*,
 		double*,
 		std::function<double(const edge*)>);
 
@@ -168,6 +173,43 @@ private:
 		std::list<const edge*>*,
 		double*,
 		std::function<double(const edge*)> capacity_of_edge);
+
+	//
+	//
+	//
+	void cc_compute_b_flow(
+		const graph* full_graph,
+		bool* b_flow_exist,
+		std::unordered_map<
+			const edge*,
+			double,
+			undirected_edge_hash,
+			undirected_edge_equal>* flow_per_edge);
+
+	//
+	//
+	//
+	void cc_create_residual_graph(
+		const graph* full_graph,
+		const std::unordered_map<
+			const edge*,
+			double,
+			undirected_edge_hash,
+			undirected_edge_equal>* flow_per_edge,
+		graph* residual_graph);
+
+	//
+	//
+	//
+	void cc_find_negative_cycle(
+		const graph* residual_graph,
+		const std::unordered_map<
+			const edge*,
+			double,
+			undirected_edge_hash,
+			undirected_edge_equal>* flow_per_edge,
+		std::list<const edge*>* cycle,
+		double* gamma);
 };
 
 }

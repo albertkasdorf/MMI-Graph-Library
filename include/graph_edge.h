@@ -14,8 +14,9 @@ private:
 	const vertex* _target;
 	const edge* _twin;
 
-	bool _has_weight;
-	double _weight;
+	std::unique_ptr<double> _weight;
+	std::unique_ptr<double> _cost;
+	std::unique_ptr<double> _capacity;
 
 public:
 	edge(void);
@@ -50,6 +51,16 @@ public:
 	bool has_weight(void) const;
 	double get_weight(void) const;
 	void set_weight(const double);
+
+	bool has_cost(void) const;
+	double get_cost(void) const;
+	void set_cost(const double);
+
+	bool has_capacity(void) const;
+	double get_capacity(void) const;
+	void set_capacity(const double);
+
+	std::shared_ptr<edge> create_copy(void) const;
 
 	std::size_t get_hash(void) const;
 

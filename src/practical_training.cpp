@@ -14,8 +14,6 @@
 #include <graph_edge.h>
 #include <graph_vertex.h>
 #include <graph_comparer.h>
-#include <graph_vertex_with_balance.h>
-#include <graph_edge_with_cost_capacity.h>
 
 
 practical_training::practical_training()

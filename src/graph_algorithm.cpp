@@ -788,29 +788,37 @@ void algorithm::edmonds_karp(
 	{
 		return e->get_weight();
 	};
-
-	edmonds_karp(
-		full_graph, source_vertex, target_vertex, maximum_flow, capacity_of_edge);
-}
-
-void algorithm::edmonds_karp(
-	const graph* full_graph,
-	const vertex* source_vertex,
-	const vertex* target_vertex,
-	double* maximum_flow,
-	std::function<double(const edge*)> capacity_of_edge)
-{
 	std::unordered_map<
 		const edge*,
 		double,
 		undirected_edge_hash,
 		undirected_edge_equal> flow_per_edge;
 
+	edmonds_karp(
+		full_graph,
+		source_vertex,
+		target_vertex,
+		&flow_per_edge,
+		maximum_flow,
+		capacity_of_edge);
+}
 
+void algorithm::edmonds_karp(
+	const graph* full_graph,
+	const vertex* source_vertex,
+	const vertex* target_vertex,
+	std::unordered_map<
+		const edge*,
+		double,
+		undirected_edge_hash,
+		undirected_edge_equal>* flow_per_edge,
+	double* maximum_flow,
+	std::function<double(const edge*)> capacity_of_edge)
+{
 	// Schritt 1: Setzen Sie f(e)=0 für alle Kanten e∈E.
 	for(auto edge : full_graph->get_edges())
 	{
-		flow_per_edge.insert(std::make_pair(edge, 0.0));
+		flow_per_edge->insert(std::make_pair(edge, 0.0));
 	}
 
 	while(true)
@@ -821,7 +829,7 @@ void algorithm::edmonds_karp(
 
 
 		// Schritt 2: Bestimmen Sie G^f und u^f(e).
-		create_residual_graph(full_graph, &flow_per_edge, &residual_graph, capacity_of_edge);
+		create_residual_graph(full_graph, flow_per_edge, &residual_graph, capacity_of_edge);
 
 		// Schritt 3: Konstruieren Sie einen kürzesten (s,t)-Weg p
 		// bzgl. der Anzahl der Kanten in G^f.
@@ -842,7 +850,7 @@ void algorithm::edmonds_karp(
 		// => für jedes Pfad element in f suchen und den wert anpassen
 		for(auto edge_on_path : shortest_path)
 		{
-			auto iter = flow_per_edge.find(edge_on_path);
+			auto iter = flow_per_edge->find(edge_on_path);
 
 			const edge* edge_from_flow = iter->first;
 			const double edge_value_from_flow = iter->second;
@@ -850,12 +858,12 @@ void algorithm::edmonds_karp(
 			// Edges pointing in the same direction?
 			if(edge_from_flow->get_source()->get_id() == edge_on_path->get_source()->get_id())
 			{
-				flow_per_edge[edge_on_path] =
+				(*flow_per_edge)[edge_on_path] =
 					edge_value_from_flow + shortest_path_min_value;
 			}
 			else
 			{
-				flow_per_edge[edge_on_path] =
+				(*flow_per_edge)[edge_on_path] =
 					edge_value_from_flow - shortest_path_min_value;
 			}
 		}
@@ -866,7 +874,7 @@ void algorithm::edmonds_karp(
 	*maximum_flow = 0.0;
 	for(auto edge_from_source : source_vertex->get_edges())
 	{
-		*maximum_flow += flow_per_edge[edge_from_source];
+		*maximum_flow += (*flow_per_edge)[edge_from_source];
 	}
 
 	return;
@@ -882,15 +890,21 @@ void algorithm::create_residual_graph(
 	graph* residual_graph,
 	std::function<double(const edge*)> capacity_of_edge)
 {
-	for(auto edge : full_graph->get_edges())
+	for(auto v : full_graph->get_vertices())
 	{
-		const std::uint32_t source_id = edge->get_source()->get_id();
-		const std::uint32_t target_id = edge->get_target()->get_id();
+		std::shared_ptr<vertex> copy = v->create_copy();
+		residual_graph->add_vertex(copy.get());
+	}
+
+	for(auto e : full_graph->get_edges())
+	{
+		const std::uint32_t source_id = e->get_source()->get_id();
+		const std::uint32_t target_id = e->get_target()->get_id();
 
 		// u(e)
-		const double edge_capacity = capacity_of_edge(edge);
+		const double edge_capacity = capacity_of_edge(e);
 		// f(e)
-		const double edge_value = flow_per_edge->at(edge);
+		const double edge_value = flow_per_edge->at(e);
 
 		// residual_capacity
 		// Forward: u^f(e) = u(e) - f(e)
@@ -900,16 +914,26 @@ void algorithm::create_residual_graph(
 
 		if( uf_forward_edge > 0.0 )
 		{
+			std::shared_ptr<edge> forward_edge = e->create_copy();
+
+			forward_edge->set_capacity(uf_forward_edge);
+			forward_edge->set_source(residual_graph->get_vertex(source_id));
+			forward_edge->set_target(residual_graph->get_vertex(target_id));
+
 			// Insert forward edge
-			residual_graph->add_directed_edge(
-				source_id, target_id, uf_forward_edge);
+			residual_graph->add_edge(forward_edge.get());
 		}
 
 		if(uf_backward_edge > 0.0)
 		{
+			std::shared_ptr<edge> backward_edge = e->create_copy();
+
+			backward_edge->set_capacity(uf_backward_edge);
+			backward_edge->set_source(residual_graph->get_vertex(target_id));
+			backward_edge->set_target(residual_graph->get_vertex(source_id));
+
 			// Insert backward edge
-			residual_graph->add_directed_edge(
-				target_id, source_id, uf_backward_edge);
+			residual_graph->add_edge(backward_edge.get());
 		}
 	}
 }
@@ -982,6 +1006,13 @@ void algorithm::cycle_cancelling(
 	bool* minimum_cost_flow_found,
 	double* minimum_cost_flow)
 {
+	std::unordered_map<
+		const edge*,
+		double,
+		undirected_edge_hash,
+		undirected_edge_equal> flow_per_edge;
+	bool b_flow_exist = false;
+
 	*minimum_cost_flow_found = false;
 	*minimum_cost_flow = 0.0;
 
@@ -991,22 +1022,320 @@ void algorithm::cycle_cancelling(
 	// - Add common source and target
 	// - Run edmonds_karp between s* and t*
 	// - maximum_flow == Sum of b(v) with b(v) > 0
+	cc_compute_b_flow(full_graph, &b_flow_exist, &flow_per_edge);
 
-	// Schritt 2:
-	// Bestimmung des Residualgraphen, der Residualkapazitäten und der
-	// Residualkosten.
-	// - check
+	std::cout << "Flow: ";
+	for(auto kvp : flow_per_edge)
+	{
+		std::cout << kvp.first->get_source()->get_id() << "->";
+		std::cout << kvp.first->get_target()->get_id() << ", ";
+		std::cout << kvp.second << "; ";
+	}
+	std::cout << std::endl << std::endl;
 
-	// Schritt 3:
-	// Konstruieren eines f-augmentierenden Zykels Z in G f mit negativen Kosten.
-	// Falls keiner existiert: STOPP
-	// -
+	if(!b_flow_exist)
+		return;
 
-	// Schritt 4:
-	// Verändern des b-Flusses entlang des Zykels um γ ≔ min e∈Z u f (e).
+	while(true)
+	{
+		// Schritt 2:
+		// Bestimmung des Residualgraphen, der Residualkapazitäten und der
+		// Residualkosten.
+		graph residual_graph;
+		cc_create_residual_graph(full_graph, &flow_per_edge, &residual_graph);
 
-	// Schritt 5:
-	// Ab Schritt 2 wiederholen.
+		std::cout << "Residual: ";
+		for(const edge* e : residual_graph.get_edges())
+		{
+			std::cout << e->get_source()->get_id() << "->" << e->get_target()->get_id();
+			std::cout << ", " << e->get_capacity() << "/" << e->get_cost() << "; ";
+		}
+		std::cout << std::endl << std::endl;
+
+		// Schritt 3:
+		// Konstruieren eines f-augmentierenden Zykels Z in G f mit negativen Kosten.
+		// Falls keiner existiert: STOPP
+		std::list<const edge*> cycle;
+		double gamma = 0.0;
+		cc_find_negative_cycle(&residual_graph, &flow_per_edge, &cycle, &gamma);
+
+		// Schritt 4:
+		// Verändern des b-Flusses entlang des Zykels um γ ≔ min e∈Z u f (e).
+
+		// Schritt 5:
+		// Ab Schritt 2 wiederholen.
+		break;
+	}
+}
+
+void algorithm::cc_compute_b_flow(
+	const graph* full_graph,
+	bool* b_flow_exist,
+	std::unordered_map<
+		const edge*,
+		double,
+		undirected_edge_hash,
+		undirected_edge_equal>* flow_per_edge)
+{
+	graph b_flow_graph(*full_graph);
+	double sum_source_flow = 0.0;
+	double sum_target_flow = 0.0;
+	std::vector<const vertex*> src_or_tgt_vert;
+
+	for(auto v : b_flow_graph.get_vertices())
+	{
+		assert(v->has_balance());
+		const double balance = v->get_balance();
+
+		if(balance == 0.0)
+			continue;
+
+		if(balance > 0.0)
+		{
+			sum_source_flow += balance;
+		}
+		else // if(balance < 0.0)
+		{
+			sum_target_flow += balance;
+		}
+
+		src_or_tgt_vert.push_back(v);
+	}
+
+	const vertex* super_source = b_flow_graph.add_vertex(nullptr, &sum_source_flow);
+	const vertex* super_target = b_flow_graph.add_vertex(nullptr, &sum_target_flow);
+
+	for(auto v : src_or_tgt_vert)
+	{
+		const double balance = v->get_balance();
+		const double cost = 0.0;
+		std::shared_ptr<edge> e = std::make_unique<edge>();
+
+		if(balance > 0.0)
+		{
+			e->set_source(super_source);
+			e->set_target(v);
+			e->set_capacity(balance);
+			e->set_cost(cost);
+		}
+		else // if(balance < 0.0)
+		{
+			e->set_source(v);
+			e->set_target(super_target);
+			e->set_capacity(balance * -1.0);
+			e->set_cost(cost);
+		}
+
+		b_flow_graph.add_edge(e.get());
+	}
+
+	double maximum_flow = 0.0;
+	std::function<double(const edge*)> capacity_of_edge = [](const edge* e)
+	{
+		return e->get_capacity();
+	};
+
+	edmonds_karp(
+		&b_flow_graph,
+		super_source,
+		super_target,
+		flow_per_edge,
+		&maximum_flow,
+		capacity_of_edge);
+
+	*b_flow_exist = (sum_source_flow == maximum_flow);
+
+	// Remove the edges from super-source/-target
+	for(const edge* e : b_flow_graph.get_edges())
+	{
+		if(e->get_source()->get_id() == super_source->get_id())
+		{
+			flow_per_edge->erase(e);
+		}
+
+		if(e->get_target()->get_id() == super_target->get_id())
+		{
+			flow_per_edge->erase(e);
+		}
+	}
+
+	return;
+}
+
+void algorithm::cc_create_residual_graph(
+	const graph* full_graph,
+	const std::unordered_map<
+		const edge*,
+		double,
+		undirected_edge_hash,
+		undirected_edge_equal>* flow_per_edge,
+	graph* residual_graph)
+{
+	for(const vertex* v : full_graph->get_vertices())
+	{
+		residual_graph->add_vertex(v);
+	}
+
+	for(auto e : full_graph->get_edges())
+	{
+		const std::uint32_t source_id = e->get_source()->get_id();
+		const std::uint32_t target_id = e->get_target()->get_id();
+
+		// u(e)
+		const double edge_capacity = e->get_capacity();
+		// f(e)
+		const double edge_value = flow_per_edge->at(e);
+
+		// residual_capacity
+		// Forward: u^f(e) = u(e) - f(e)
+		const double uf_forward_edge = edge_capacity - edge_value;
+		// Backward: u^f(e) = f(e)
+		const double uf_backward_edge = edge_value;
+
+		if( uf_forward_edge > 0.0 )
+		{
+			std::shared_ptr<edge> forward_edge = e->create_copy();
+
+			forward_edge->set_capacity(uf_forward_edge);
+			forward_edge->set_cost(e->get_cost());
+			forward_edge->set_source(residual_graph->get_vertex(source_id));
+			forward_edge->set_target(residual_graph->get_vertex(target_id));
+
+			// Insert forward edge
+			residual_graph->add_edge(forward_edge.get());
+		}
+
+		if(uf_backward_edge > 0.0)
+		{
+			std::shared_ptr<edge> backward_edge = e->create_copy();
+
+			backward_edge->set_capacity(uf_backward_edge);
+			backward_edge->set_cost(e->get_cost() * -1.0);
+			backward_edge->set_source(residual_graph->get_vertex(target_id));
+			backward_edge->set_target(residual_graph->get_vertex(source_id));
+
+			// Insert backward edge
+			residual_graph->add_edge(backward_edge.get());
+		}
+	}
+
+	return;
+}
+
+void algorithm::cc_find_negative_cycle(
+	const graph* residual_graph,
+	const std::unordered_map<
+		const edge*,
+		double,
+		undirected_edge_hash,
+		undirected_edge_equal>* flow_per_edge,
+	std::list<const edge*>* cycle,
+	double* gamma)
+{
+	graph search_graph(*residual_graph);
+
+	const vertex* start_vertex = search_graph.add_vertex(nullptr, nullptr);
+	for(const vertex* v : search_graph.get_vertices())
+	{
+		if(v->get_id() == start_vertex->get_id())
+			continue;
+
+		edge e;
+		e.set_source(start_vertex);
+		e.set_target(v);
+		e.set_cost(0.0);
+		search_graph.add_edge(&e);
+	}
+
+	// Edge from the predecessor vertex. (target == vertex)
+	std::map<const vertex*, double> distances;
+	std::map<const vertex*, const edge*> predecessor;
+
+	// Initialize distances and predecessor
+	for(const vertex* v : search_graph.get_vertices())
+	{
+		double initial_distance = std::numeric_limits<double>::infinity();
+
+		if(v->get_id() == start_vertex->get_id())
+		{
+			initial_distance = 0.0;
+		}
+
+		distances.insert(std::make_pair(v, initial_distance));
+		predecessor.insert(std::make_pair(v, nullptr));
+	}
+
+	// Compute the distances and the predecessor
+	const std::uint32_t vertex_count = search_graph.get_vertex_count();
+	std::list<const vertex*> changed_set;
+
+	for(std::uint32_t i = 0; i < vertex_count; ++i)
+	{
+		const bool is_last_round = ((i + 1) == vertex_count);
+
+		for(auto edge : search_graph.get_edges())
+		{
+			const vertex* source_vertex = edge->get_source();
+			const vertex* target_vertex = edge->get_target();
+
+			const double source_distance = distances[source_vertex];
+			const double target_distance = distances[target_vertex];
+
+			const double new_distance = source_distance + edge->get_cost();
+
+			if(new_distance < target_distance)
+			{
+				distances[target_vertex] = new_distance;
+				predecessor[target_vertex] = edge;
+
+				if(is_last_round)
+				{
+					changed_set.push_back(target_vertex);
+				}
+			}
+		}
+	}
+
+	if(!changed_set.empty())
+	{
+		const vertex* v = changed_set.front();
+		std::set<const vertex*, compare_vertex_id> lookup;
+
+		for(std::uint32_t i = 0; i < vertex_count; ++i)
+		{
+			const edge* e = predecessor[v];
+			v = e->get_source();
+			continue;
+		}
+
+		std::cout << "Flow: ";
+		for(auto kvp : *flow_per_edge)
+		{
+			std::cout << kvp.first->get_source()->get_id() << "->";
+			std::cout << kvp.first->get_target()->get_id() << ", ";
+			std::cout << kvp.second << "; ";
+		}
+		std::cout << std::endl << std::endl;
+
+		*gamma = std::numeric_limits<double>::infinity();
+		while(lookup.count(v) == 0)
+		{
+			lookup.insert(v);
+
+			const edge* e = predecessor[v];
+			v = e->get_source();
+
+			cycle->push_back(e);
+			//*gamma = std::min(*gamma, flow_per_edge->at(e));
+
+			auto iter = flow_per_edge->find(e);
+			auto is_end = (iter == flow_per_edge->end());
+
+			continue;
+		}
+	}
+
+	return;
 }
 
 void algorithm::successive_shortest_path(

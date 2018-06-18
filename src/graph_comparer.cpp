@@ -65,6 +65,23 @@ std::size_t undirected_edge_hash::operator()(const edge* edge) const
 
 //------------------------------------------------------------------------------
 
+std::size_t directed_edge_hash::operator()(const edge* edge) const
+{
+	const std::uint32_t source_id = edge->get_source()->get_id();
+	const std::uint32_t target_id = edge->get_target()->get_id();
+
+	std::stringstream ss;
+	std::hash<std::string> h;
+
+	ss << source_id << "-" << target_id;
+
+	const std::size_t hash = h(ss.str());
+
+	return hash;
+}
+
+//------------------------------------------------------------------------------
+
 bool undirected_edge_equal::operator()(const edge* lhs, const edge* rhs) const
 {
 	const std::uint32_t lhs_source_id = lhs->get_source()->get_id();
@@ -78,6 +95,21 @@ bool undirected_edge_equal::operator()(const edge* lhs, const edge* rhs) const
 		(lhs_source_id == rhs_target_id) && (lhs_target_id == rhs_source_id);
 
 	return equal || flipped_equal;
+}
+
+//------------------------------------------------------------------------------
+
+bool directed_edge_equal::operator()(const edge* lhs, const edge* rhs) const
+{
+	const std::uint32_t lhs_source_id = lhs->get_source()->get_id();
+	const std::uint32_t lhs_target_id = lhs->get_target()->get_id();
+	const std::uint32_t rhs_source_id = rhs->get_source()->get_id();
+	const std::uint32_t rhs_target_id = rhs->get_target()->get_id();
+
+	const bool equal =
+		(lhs_source_id == rhs_source_id) && (lhs_target_id == rhs_target_id);
+
+	return equal;
 }
 
 //------------------------------------------------------------------------------

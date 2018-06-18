@@ -3,8 +3,6 @@
 #include <cassert>
 #include <graph_vertex.h>
 #include <graph_edge.h>
-#include <graph_vertex_with_balance.h>
-#include <graph_edge_with_cost_capacity.h>
 
 
 namespace graph
@@ -14,28 +12,114 @@ graph::graph()
 {
 }
 
+graph::graph(const graph& rhs)
+{
+	for(auto v : rhs.get_vertices())
+	{
+		const std::size_t hash_of_v = vertex::create_hash(v->get_id());
+		std::shared_ptr<vertex> copy_of_v = std::make_shared<vertex>(v->get_id());
+
+		if(v->has_balance())
+			copy_of_v->set_balance(v->get_balance());
+
+		vertices[hash_of_v] = copy_of_v;
+	}
+
+	// TODO: Twin handling
+	for(auto e : rhs.get_edges())
+	{
+		std::shared_ptr<edge> copy_of_e = std::make_shared<edge>();
+
+		if(e->has_weight())
+			copy_of_e->set_weight(e->get_weight());
+
+		if(e->has_cost())
+			copy_of_e->set_cost(e->get_cost());
+
+		if(e->has_capacity())
+			copy_of_e->set_capacity(e->get_capacity());
+
+		vertex* v_source = get_vertex_internal(e->get_source()->get_id());
+		vertex* v_target = get_vertex_internal(e->get_target()->get_id());
+
+		copy_of_e->set_source(v_source);
+		copy_of_e->set_target(v_target);
+
+		v_source->add_edge(copy_of_e.get());
+
+		const std::size_t hash = copy_of_e->get_hash();
+		edges.insert(std::make_pair(hash, copy_of_e));
+	}
+}
+
 graph::~graph()
 {
 }
 
-void graph::add_vertex(const uint32_t id)
+const vertex* graph::add_vertex(const uint32_t id)
+{
+	const std::size_t hash = vertex::create_hash(id);
+	const bool vertex_not_found = vertices.count(hash) == 0;
+
+	if(vertex_not_found)
+	{
+		vertices[hash] = std::make_shared<vertex>(id);
+	}
+
+	return vertices[hash].get();
+}
+
+void graph::add_vertex(const uint32_t id, const double balance)
 {
 	const std::size_t hash = vertex::create_hash(id);
 	const bool vertex_not_found = vertices.count(hash) == 0;
 	if(vertex_not_found)
 	{
-		vertices[hash] = std::make_shared<vertex>(id);
+		auto v = std::make_shared<vertex>(id);
+		v->set_balance(balance);
+
+		vertices[hash] = v;
 	}
 }
 
-void graph::add_vertex(const uint32_t id, const double balance)
+const vertex* graph::add_vertex(const uint32_t* id, const double* balance)
 {
-	const std::size_t hash = vertex_with_balance::create_hash(id);
-	const bool vertex_not_found = vertices.count(hash) == 0;
-	if(vertex_not_found)
+	std::shared_ptr<vertex> v;
+
+	if(id == nullptr)
 	{
-		vertices[hash] = std::make_shared<vertex_with_balance>(id, balance);
+		std::uint32_t max_id = 0;
+		for(auto item : vertices)
+			max_id = std::max(max_id, item.second->get_id());
+		v = std::make_shared<vertex>(++max_id);
 	}
+	else
+	{
+		v = std::make_shared<vertex>(*id);
+	}
+
+	if(balance != nullptr)
+		v->set_balance(*balance);
+
+	const std::size_t hash = vertex::create_hash(v->get_id());
+	assert(vertices.count(hash) == 0);
+
+	vertices[hash] = v;
+
+	return v.get();
+}
+
+const vertex* graph::add_vertex(const vertex* v)
+{
+	std::shared_ptr<vertex> copy = v->create_copy();
+	const std::size_t hash = vertex::create_hash(*copy);
+
+	if(vertices.count(hash) == 0)
+	{
+		vertices[hash] = copy;
+	}
+
+	return vertices[hash].get();
 }
 
 const vertex* graph::get_vertex(const std::uint32_t id) const
@@ -87,29 +171,39 @@ std::uint32_t graph::get_vertex_count(void) const
 
 void graph::add_edge(const edge* new_edge)
 {
+	const uint32_t source_id = new_edge->get_source()->get_id();
+	const uint32_t target_id = new_edge->get_target()->get_id();
+
+	add_vertex(source_id);
+	add_vertex(target_id);
+
+	vertex* source = get_vertex_internal(source_id);
+	vertex* target = get_vertex_internal(target_id);
+
+	std::shared_ptr<edge> forward_edge = new_edge->create_copy();
+
+	forward_edge->set_source(source);
+	forward_edge->set_target(target);
+
+	source->add_edge(forward_edge.get());
+
+	const std::size_t forward_edge_hash = forward_edge->get_hash();
+	edges.insert(std::make_pair(forward_edge_hash, forward_edge));
+
 	if(new_edge->has_twin())
 	{
-		if(new_edge->has_weight())
-		{
-			add_undirected_edge(
-				new_edge->get_source()->get_id(),
-				new_edge->get_target()->get_id(),
-				new_edge->get_weight());
-		}
-		else
-		{
-			add_undirected_edge(
-				new_edge->get_source()->get_id(), new_edge->get_target()->get_id());
-		}
-	}
-	else
-	{
-		assert(new_edge->has_weight());
+		std::shared_ptr<edge> backward_edge = new_edge->create_copy();
 
-		add_directed_edge(
-			new_edge->get_source()->get_id(),
-			new_edge->get_target()->get_id(),
-			new_edge->get_weight());
+		backward_edge->set_source(target);
+		backward_edge->set_target(source);
+
+		target->add_edge(backward_edge.get());
+
+		forward_edge->set_twin(backward_edge.get());
+		backward_edge->set_twin(forward_edge.get());
+
+		const std::size_t backward_edge_hash = backward_edge->get_hash();
+		edges.insert(std::make_pair(backward_edge_hash, backward_edge));
 	}
 }
 
@@ -224,10 +318,12 @@ void graph::add_directed_edge(
 	vertex* source = get_vertex_internal(source_id);
 	vertex* target = get_vertex_internal(target_id);
 
-	auto src_tgt_edge = std::make_shared<edge_with_cost_capacity>(cost, capacity);
+	auto src_tgt_edge = std::make_shared<edge>();
 
 	src_tgt_edge->set_source(source);
 	src_tgt_edge->set_target(target);
+	src_tgt_edge->set_cost(cost);
+	src_tgt_edge->set_capacity(capacity);
 
 	source->add_edge(src_tgt_edge.get());
 

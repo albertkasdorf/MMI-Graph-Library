@@ -17,6 +17,7 @@ class graph
 {
 public:
 	graph();
+	graph(const graph&);
 	~graph();
 
 private:
@@ -27,12 +28,22 @@ public:
 	//
 	// Add a vertex to the graph.
 	//
-	void add_vertex(const uint32_t);
+	const vertex* add_vertex(const uint32_t);
 
 	//
 	// Add a balanced vertex to the graph.
 	//
 	void add_vertex(const uint32_t, const double);
+
+	//
+	//
+	//
+	const vertex* add_vertex(const uint32_t*, const double*);
+
+	//
+	//
+	//
+	const vertex* add_vertex(const vertex*);
 
 	//
 	// Add a new edge to the graph.
@@ -100,7 +111,7 @@ public:
 	{
 		return std::make_pair(
 			vertex_iterator<V>(vertices.cbegin()),
-			vertex_iterator<V>(vertices.end()));
+			vertex_iterator<V>(vertices.cend()));
 	}
 
 	//

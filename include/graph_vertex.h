@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <vector>
 #include <graph_iterator.h>
+#include <memory>
 
 namespace graph
 {
@@ -11,6 +12,12 @@ class vertex
 {
 private:
 	uint32_t _id;
+
+	//
+	// Balance of this node.
+	//
+	std::unique_ptr<double> _balance;
+
 	//
 	// Edges that points to adjacent vertices.
 	//
@@ -36,6 +43,13 @@ public:
 	// Changes the id of this vertex.
 	//
 	void set_id(uint32_t);
+
+	//
+	// Check, Get and Set the Balance.
+	//
+	bool has_balance(void) const;
+	double get_balance(void) const;
+	void set_balance(double);
 
 	//
 	// Add a new edge to this vertex.
@@ -72,6 +86,8 @@ public:
 	// vertex.
 	//
 	//void get_pointing_edges(void) const;
+
+	std::shared_ptr<vertex> create_copy(void) const;
 
 public:
 	static std::size_t create_hash(const uint32_t);
