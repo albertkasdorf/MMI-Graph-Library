@@ -18,6 +18,13 @@ edge::edge()
 
 edge::~edge()
 {
+	_source = nullptr;
+	_target = nullptr;
+	_twin = nullptr;
+
+	_weight.reset(nullptr);
+	_cost.reset(nullptr);
+	_capacity.reset(nullptr);
 }
 
 void edge::set_source(const vertex* new_vertex)

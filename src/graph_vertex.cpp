@@ -22,6 +22,9 @@ vertex::vertex(const vertex& rhs)
 
 vertex::~vertex()
 {
+	_id = 0;
+	_edges.clear();
+	_balance.reset(nullptr);
 }
 
 uint32_t vertex::get_id(void) const

@@ -1139,7 +1139,7 @@ void algorithm::cc_compute_b_flow(
 	{
 		const double balance = v->get_balance();
 		const double cost = 0.0;
-		std::shared_ptr<edge> e = std::make_unique<edge>();
+		std::shared_ptr<edge> e = std::make_shared<edge>();
 
 		if(balance > 0.0)
 		{
@@ -1356,37 +1356,92 @@ void algorithm::successive_shortest_path(
 	bool* minimum_cost_flow_found,
 	double* minimum_cost_flow)
 {
+	std::unordered_map<
+		const edge*,
+		double,
+		undirected_edge_hash,
+		undirected_edge_equal> flow_per_edge;
+
+
 	*minimum_cost_flow_found = false;
 	*minimum_cost_flow = 0.0;
 
-	//	for(auto edge : g.get_edges<graph::edge>())
-	//	{
-	//		edge->get_source();
-	//		continue;
-	//	}
-	//	g.get_edges<graph::edge_with_cost_capacity>();
+	// Schritt 1: Initialisierung des Graph
+	// - Kanten mit negativen Kosten: voll auslasten
+	// - Restliche Kanten: 0
+	for(const edge* e : full_graph->get_edges())
+	{
+		double flow = 0.0;
 
-	//	for(auto vertex_current : g.get_vertices<graph::vertex_with_balance>())
-	//	{
-	//		vertex_current->get_balance();
-	//		for(auto edge_current : vertex_current->get_edges())
-	//		{
-	//			auto source1 = edge_current->get_source();
-	//			auto source2 = edge_current->get_source<graph::vertex_with_balance>();
+		if(e->get_cost() < 0)
+			flow = e->get_capacity();
 
-	//			auto target1 = edge_current->get_target();
-	//			auto target2 = edge_current->get_target<graph::vertex_with_balance>();
+		flow_per_edge.insert(std::make_pair(e, flow));
+	}
 
-	//			auto balance = source2->get_balance();
+	while(true)
+	{
+		// Schritt 2: Pseudo-Quellen und –Senken ermitteln
+		// - Pseudo-Quellen: b(s) > b'(s)
+		// - Pseudo-Senken: b(t) < b'(t)
+		std::vector<const vertex*> pseudo_source, pseudo_target;
+		std::map<const vertex*, double, compare_vertex_id> b_prim;
 
-	//			continue;
-	//		}
+		for(const edge* e : full_graph->get_edges())
+		{
+			const double cost = e->get_cost();
+			if(cost >= 0.0)
+				continue;
 
-	//		for(auto edge_current : vertex_current->get_edges<graph::edge_with_cost_capacity>())
-	//		{
-	//			continue;
-	//		}
-	//	}
+			const double capacity = e->get_capacity();
+
+			const vertex* source = e->get_source();
+			const bool source_not_found = b_prim.count(source) == 0;
+
+			if(source_not_found)
+				b_prim.insert(std::make_pair(source, 0.0));
+			b_prim[source] += capacity;
+
+			const vertex* target = e->get_target();
+			const bool target_not_found = b_prim.count(target) == 0;
+			if(target_not_found)
+				b_prim.insert(std::make_pair(target, 0.0));
+			b_prim[target] += -capacity;
+		}
+
+		for(const vertex* v : full_graph->get_vertices())
+		{
+			const double balance = v->get_balance();
+			const double balance_prim = (b_prim.count(v) > 0) ? b_prim[v] : 0.0;
+
+			if(balance > balance_prim)
+				pseudo_source.push_back(v);
+			if(balance < balance_prim)
+				pseudo_target.push_back(v);
+		}
+
+		// Schritt 3:
+		// Wenn Pseudo-Quelle und erreichbare –Senke existiert:
+		// Kürzesten Weg zwischen Pseudo-Quelle und –Senke in G^f
+		// bzgl. c^f berechnen, sonst zu Schritt 6 gehen
+		graph residual_graph;
+
+		cc_create_residual_graph(
+			full_graph,
+			&flow_per_edge,
+			&residual_graph );
+
+		// Schritt 4:
+		// Flusserhöhung durchführen und ggf. Pseudo-Quellen/-Senken entfernen
+
+		// Schritt 5:
+		// Gehen Sie zu Schritt 3
+		break;
+	}
+
+	// Schritt 6:
+	// Wenn Balancen ausgeglichen sind: kostenminimalen Fluss gefunden
+	// Sonst: kein b-Fluss vorhanden
 }
 
 }

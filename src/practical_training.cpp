@@ -422,7 +422,7 @@ void practical_training::task05_maximum_flow(void)
 void practical_training::task06_minimum_cost_flow(void)
 {
 	graph::loader graph_loader;
-	const graph::files graph_file = graph::files::Kostenminimal3;
+	const graph::files graph_file = graph::files::Kostenminimal1;
 	graph::graph full_graph;
 	graph::algorithm algorithm;
 	bool minimum_cost_flow_found = false;
@@ -434,6 +434,14 @@ void practical_training::task06_minimum_cost_flow(void)
 
 	std::cout << "=== Cycle Cancelling ===" << std::endl;
 	algorithm.cycle_cancelling(
+		&full_graph, &minimum_cost_flow_found, &minimum_cost_flow);
+	if(minimum_cost_flow_found)
+		std::cout << "Minimal cost flow is " << minimum_cost_flow << std::endl;
+	else
+		std::cout << "Minimal cost flow not found." << std::endl;
+
+	std::cout << "=== Successive Shortest Path ===" << std::endl;
+	algorithm.successive_shortest_path(
 		&full_graph, &minimum_cost_flow_found, &minimum_cost_flow);
 	if(minimum_cost_flow_found)
 		std::cout << "Minimal cost flow is " << minimum_cost_flow << std::endl;
