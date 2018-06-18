@@ -4,7 +4,7 @@ project(graph_lib)
 include_directories(include)
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fsanitize=address -fno-omit-frame-pointer")
 set(HEADERS
 	include/graph_files.h
 	include/graph_vertex.h

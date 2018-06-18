@@ -31,7 +31,7 @@ private:
 public:
 	vertex(const uint32_t);
 	vertex(const vertex&);
-	virtual ~vertex();
+	~vertex();
 
 public:
 	//

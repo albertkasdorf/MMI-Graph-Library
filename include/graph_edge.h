@@ -21,7 +21,7 @@ private:
 public:
 	edge(void);
 	edge(const edge&) = delete;
-	virtual ~edge();
+	~edge();
 
 public:
 	template<typename V = vertex>

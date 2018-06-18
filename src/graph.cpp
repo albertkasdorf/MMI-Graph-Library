@@ -427,6 +427,26 @@ const edge* graph::get_edge(
 	return result_edge;
 }
 
+const edge* graph::get_edge(const edge* e) const
+{
+	const edge* result_edge = nullptr;
+
+	for(const edge* e2 : get_edges())
+	{
+		const bool source_equal = e2->get_source()->get_id() == e->get_source()->get_id();
+		const bool target_equal = e2->get_target()->get_id() == e->get_target()->get_id();
+
+		if(source_equal && target_equal)
+		{
+			result_edge = e2;
+			break;
+		}
+	}
+
+	assert(result_edge != nullptr);
+	return result_edge;
+}
+
 
 
 }

@@ -422,7 +422,7 @@ void practical_training::task05_maximum_flow(void)
 void practical_training::task06_minimum_cost_flow(void)
 {
 	graph::loader graph_loader;
-	const graph::files graph_file = graph::files::Kostenminimal1;
+	const graph::files graph_file = graph::files::Kostenminimal3;
 	graph::graph full_graph;
 	graph::algorithm algorithm;
 	bool minimum_cost_flow_found = false;

@@ -1024,14 +1024,14 @@ void algorithm::cycle_cancelling(
 	// - maximum_flow == Sum of b(v) with b(v) > 0
 	cc_compute_b_flow(full_graph, &b_flow_exist, &flow_per_edge);
 
-	std::cout << "Flow: ";
-	for(auto kvp : flow_per_edge)
-	{
-		std::cout << kvp.first->get_source()->get_id() << "->";
-		std::cout << kvp.first->get_target()->get_id() << ", ";
-		std::cout << kvp.second << "; ";
-	}
-	std::cout << std::endl << std::endl;
+//	std::cout << "Flow: ";
+//	for(auto kvp : flow_per_edge)
+//	{
+//		std::cout << kvp.first->get_source()->get_id() << "->";
+//		std::cout << kvp.first->get_target()->get_id() << ", ";
+//		std::cout << kvp.second << "; ";
+//	}
+//	std::cout << std::endl << std::endl;
 
 	if(!b_flow_exist)
 		return;
@@ -1044,13 +1044,13 @@ void algorithm::cycle_cancelling(
 		graph residual_graph;
 		cc_create_residual_graph(full_graph, &flow_per_edge, &residual_graph);
 
-		std::cout << "Residual: ";
-		for(const edge* e : residual_graph.get_edges())
-		{
-			std::cout << e->get_source()->get_id() << "->" << e->get_target()->get_id();
-			std::cout << ", " << e->get_capacity() << "/" << e->get_cost() << "; ";
-		}
-		std::cout << std::endl << std::endl;
+//		std::cout << "Residual: ";
+//		for(const edge* e : residual_graph.get_edges())
+//		{
+//			std::cout << e->get_source()->get_id() << "->" << e->get_target()->get_id();
+//			std::cout << ", " << e->get_capacity() << "/" << e->get_cost() << "; ";
+//		}
+//		std::cout << std::endl << std::endl;
 
 		// Schritt 3:
 		// Konstruieren eines f-augmentierenden Zykels Z in G f mit negativen Kosten.
@@ -1059,13 +1059,43 @@ void algorithm::cycle_cancelling(
 		double gamma = 0.0;
 		cc_find_negative_cycle(&residual_graph, &flow_per_edge, &cycle, &gamma);
 
+		if(cycle.empty())
+			break;
+
 		// Schritt 4:
-		// Verändern des b-Flusses entlang des Zykels um γ ≔ min e∈Z u f (e).
+		// Verändern des b-Flusses entlang des Zykels um γ.
+		for(const edge* e : cycle)
+		{
+			auto iter = flow_per_edge.find(e);
+			assert(iter != flow_per_edge.end());
+			const edge* e2 = (*iter).first;
+
+			if(e2->get_source()->get_id() == e->get_source()->get_id())
+				flow_per_edge[e] += gamma;
+			else
+				flow_per_edge[e] -= gamma;
+		}
+
+//		std::cout << "Flow: ";
+//		for(auto kvp : flow_per_edge)
+//		{
+//			std::cout << kvp.first->get_source()->get_id() << "->";
+//			std::cout << kvp.first->get_target()->get_id() << ", ";
+//			std::cout << kvp.second << "; ";
+//		}
+//		std::cout << std::endl << std::endl;
 
 		// Schritt 5:
 		// Ab Schritt 2 wiederholen.
-		break;
 	}
+
+	*minimum_cost_flow_found = true;
+	for(auto kvp : flow_per_edge)
+	{
+		*minimum_cost_flow += kvp.first->get_cost() * kvp.second;
+	}
+
+	return;
 }
 
 void algorithm::cc_compute_b_flow(
@@ -1129,6 +1159,11 @@ void algorithm::cc_compute_b_flow(
 		b_flow_graph.add_edge(e.get());
 	}
 
+	std::unordered_map<
+		const edge*,
+		double,
+		undirected_edge_hash,
+		undirected_edge_equal> flow_per_edge_internal;
 	double maximum_flow = 0.0;
 	std::function<double(const edge*)> capacity_of_edge = [](const edge* e)
 	{
@@ -1139,24 +1174,16 @@ void algorithm::cc_compute_b_flow(
 		&b_flow_graph,
 		super_source,
 		super_target,
-		flow_per_edge,
+		&flow_per_edge_internal,
 		&maximum_flow,
 		capacity_of_edge);
 
 	*b_flow_exist = (sum_source_flow == maximum_flow);
 
-	// Remove the edges from super-source/-target
-	for(const edge* e : b_flow_graph.get_edges())
+	for(const edge* e : full_graph->get_edges())
 	{
-		if(e->get_source()->get_id() == super_source->get_id())
-		{
-			flow_per_edge->erase(e);
-		}
-
-		if(e->get_target()->get_id() == super_target->get_id())
-		{
-			flow_per_edge->erase(e);
-		}
+		const double flow = flow_per_edge_internal[e];
+		flow_per_edge->insert(std::make_pair(e, flow));
 	}
 
 	return;
@@ -1308,15 +1335,6 @@ void algorithm::cc_find_negative_cycle(
 			continue;
 		}
 
-		std::cout << "Flow: ";
-		for(auto kvp : *flow_per_edge)
-		{
-			std::cout << kvp.first->get_source()->get_id() << "->";
-			std::cout << kvp.first->get_target()->get_id() << ", ";
-			std::cout << kvp.second << "; ";
-		}
-		std::cout << std::endl << std::endl;
-
 		*gamma = std::numeric_limits<double>::infinity();
 		while(lookup.count(v) == 0)
 		{
@@ -1325,13 +1343,8 @@ void algorithm::cc_find_negative_cycle(
 			const edge* e = predecessor[v];
 			v = e->get_source();
 
-			cycle->push_back(e);
-			//*gamma = std::min(*gamma, flow_per_edge->at(e));
-
-			auto iter = flow_per_edge->find(e);
-			auto is_end = (iter == flow_per_edge->end());
-
-			continue;
+			cycle->push_back(residual_graph->get_edge(e));
+			*gamma = std::min(*gamma, e->get_capacity());
 		}
 	}
 

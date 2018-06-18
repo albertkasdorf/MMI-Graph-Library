@@ -1,6 +1,7 @@
 #include <graph_vertex.h>
 #include <functional>
 #include <graph_edge.h>
+#include <iostream>
 
 namespace graph
 {

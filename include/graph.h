@@ -124,6 +124,11 @@ public:
 	//
 	const edge* get_edge(const vertex*, const vertex*) const;
 
+	//
+	//
+	//
+	const edge* get_edge(const edge*) const;
+
 
 private:
 	vertex* get_vertex_internal(const std::uint32_t) const;
