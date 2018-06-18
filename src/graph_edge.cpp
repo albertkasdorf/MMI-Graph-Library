@@ -5,6 +5,7 @@
 #include <sstream>
 #include <graph_vertex.h>
 #include <iostream>
+#include <memory>
 
 namespace graph
 {

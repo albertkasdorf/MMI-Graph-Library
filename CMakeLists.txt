@@ -4,6 +4,10 @@ project(graph_lib)
 include_directories(include)
 
 set(CMAKE_CXX_STANDARD 14)
+#
+# No more leaks with sanitize flags in gcc and clang
+# https://lemire.me/blog/2016/04/20/no-more-leaks-with-sanitize-flags-in-gcc-and-clang/
+#
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fsanitize=address -fno-omit-frame-pointer")
 set(HEADERS
 	include/graph_files.h
