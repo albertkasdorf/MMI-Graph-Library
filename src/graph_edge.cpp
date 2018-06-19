@@ -71,7 +71,7 @@ double edge::get_weight(void) const
 
 void edge::set_weight(const double value)
 {
-	_weight = std::make_unique<double>(value);
+	_weight.reset(new double(value));
 }
 
 bool edge::has_cost(void) const
@@ -87,7 +87,7 @@ double edge::get_cost(void) const
 
 void edge::set_cost(const double value)
 {
-	_cost = std::make_unique<double>(value);
+	_cost.reset(new double(value));
 }
 
 bool edge::has_capacity(void) const
@@ -103,7 +103,7 @@ double edge::get_capacity(void) const
 
 void edge::set_capacity(const double value)
 {
-	_capacity = std::make_unique<double>(value);
+	_capacity.reset(new double(value));
 }
 
 std::shared_ptr<edge> edge::create_copy(void) const

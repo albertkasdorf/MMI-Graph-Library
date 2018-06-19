@@ -50,7 +50,7 @@ double vertex::get_balance(void) const
 
 void vertex::set_balance(double value)
 {
-	_balance = std::make_unique<double>(value);
+	_balance.reset(new double(value));
 }
 
 void vertex::add_edge(const edge* new_edge)
