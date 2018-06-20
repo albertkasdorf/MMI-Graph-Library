@@ -210,6 +210,29 @@ private:
 			undirected_edge_equal>* flow_per_edge,
 		std::list<const edge*>* cycle,
 		double* gamma);
+
+	//
+	//
+	//
+	void ssp_moore_bellman_ford(
+		const graph* graph,
+		const vertex* start_vertex,
+		std::map<const vertex*, const edge*, compare_vertex_id>* predecessor);
+
+	//
+	//
+	//
+	void viz_flow(
+		std::unordered_map<
+			const edge*,
+			double,
+			undirected_edge_hash,
+			undirected_edge_equal>& flow_per_edge);
+
+	//
+	//
+	//
+	void viz_residual(graph& residual_graph);
 };
 
 }

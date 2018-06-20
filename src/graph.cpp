@@ -3,6 +3,7 @@
 #include <cassert>
 #include <graph_vertex.h>
 #include <graph_edge.h>
+#include <graph_comparer.h>
 
 
 namespace graph
@@ -124,14 +125,19 @@ const vertex* graph::add_vertex(const vertex* v)
 
 const vertex* graph::get_vertex(const std::uint32_t id) const
 {
-	return get_vertex_internal(id);
+	vertex* result = get_vertex_internal(id);
+	return result;
 }
 
 vertex* graph::get_vertex_internal(const std::uint32_t id) const
 {
 	const std::size_t hash = vertex::create_hash(id);
-	auto iter = vertices.find(hash);
-	return (iter->second).get();
+	const auto iter = vertices.find(hash);
+
+	if(iter != vertices.end())
+		return (iter->second).get();
+	else
+		return nullptr;
 }
 
 std::uint32_t graph::get_vertex_count(void) const
@@ -427,19 +433,31 @@ const edge* graph::get_edge(
 	return result_edge;
 }
 
-const edge* graph::get_edge(const edge* e) const
+const edge* graph::get_edge(
+	const edge* foreign_edge,
+	const bool precise_match) const
 {
 	const edge* result_edge = nullptr;
+	directed_edge_equal deq;
+	undirected_edge_equal ueq;
 
-	for(const edge* e2 : get_edges())
+	for(const edge* graph_edge : get_edges())
 	{
-		const bool source_equal = e2->get_source()->get_id() == e->get_source()->get_id();
-		const bool target_equal = e2->get_target()->get_id() == e->get_target()->get_id();
-
-		if(source_equal && target_equal)
+		if(precise_match)
 		{
-			result_edge = e2;
-			break;
+			if(deq(foreign_edge, graph_edge))
+			{
+				result_edge = graph_edge;
+				break;
+			}
+		}
+		else
+		{
+			if(ueq(foreign_edge, graph_edge))
+			{
+				result_edge = graph_edge;
+				break;
+			}
 		}
 	}
 

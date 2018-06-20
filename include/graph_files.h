@@ -37,6 +37,7 @@ enum class files
 	Kostenminimal3,
 	Kostenminimal4,
 	Kostenminimal5,
+	Kostenminimal6,
 };
 
 }

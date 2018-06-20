@@ -52,13 +52,14 @@ std::string loader::file_name_get(const files& graph_file)
 	case files::Wege2: file_name = "Wege2.txt"; break;
 	case files::Wege3: file_name = "Wege3.txt"; break;
 	case files::Fluss: file_name = "Fluss.txt"; break;
-	case files::Fluss2: file_name ="Fluss2.txt"; break;
-	case files::Fluss3: file_name ="Fluss3.txt"; break;
-	case files::Kostenminimal1: file_name ="Kostenminimal1.txt"; break;
-	case files::Kostenminimal2: file_name ="Kostenminimal2.txt"; break;
-	case files::Kostenminimal3: file_name ="Kostenminimal3.txt"; break;
-	case files::Kostenminimal4: file_name ="Kostenminimal4.txt"; break;
-	case files::Kostenminimal5: file_name ="Kostenminimal5.txt"; break;
+	case files::Fluss2: file_name = "Fluss2.txt"; break;
+	case files::Fluss3: file_name = "Fluss3.txt"; break;
+	case files::Kostenminimal1: file_name = "Kostenminimal1.txt"; break;
+	case files::Kostenminimal2: file_name = "Kostenminimal2.txt"; break;
+	case files::Kostenminimal3: file_name = "Kostenminimal3.txt"; break;
+	case files::Kostenminimal4: file_name = "Kostenminimal4.txt"; break;
+	case files::Kostenminimal5: file_name = "Kostenminimal5.txt"; break;
+	case files::Kostenminimal6: file_name = "Kostenminimal6.txt"; break;
 	default: assert(false);
 	}
 
@@ -112,6 +113,7 @@ void loader::load(
 	case files::Kostenminimal3:
 	case files::Kostenminimal4:
 	case files::Kostenminimal5:
+	case files::Kostenminimal6:
 		load_edge_list_minimum_cost_flow(file_name, graph);
 		break;
 	default: assert(false);

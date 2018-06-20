@@ -127,7 +127,8 @@ public:
 	//
 	//
 	//
-	const edge* get_edge(const edge*) const;
+	const edge* get_edge(
+		const edge* foreign_edge, const bool precise_match = true) const;
 
 
 private:
