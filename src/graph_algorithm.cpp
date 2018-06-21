@@ -1010,6 +1010,8 @@ void algorithm::cycle_cancelling(
 	bool* minimum_cost_flow_found,
 	double* minimum_cost_flow)
 {
+	const bool show_viz = true;
+
 	std::unordered_map<
 		const edge*,
 		double,
@@ -1028,17 +1030,10 @@ void algorithm::cycle_cancelling(
 	// - maximum_flow == Sum of b(v) with b(v) > 0
 	cc_compute_b_flow(full_graph, &b_flow_exist, &flow_per_edge);
 
-//	std::cout << "Flow: ";
-//	for(auto kvp : flow_per_edge)
-//	{
-//		std::cout << kvp.first->get_source()->get_id() << "->";
-//		std::cout << kvp.first->get_target()->get_id() << ", ";
-//		std::cout << kvp.second << "; ";
-//	}
-//	std::cout << std::endl << std::endl;
-
 	if(!b_flow_exist)
 		return;
+
+	viz_flow(show_viz, &flow_per_edge);
 
 	while(true)
 	{
@@ -1046,25 +1041,25 @@ void algorithm::cycle_cancelling(
 		// Bestimmung des Residualgraphen, der Residualkapazitäten und der
 		// Residualkosten.
 		graph residual_graph;
+
 		cc_create_residual_graph(full_graph, &flow_per_edge, &residual_graph);
 
-//		std::cout << "Residual: ";
-//		for(const edge* e : residual_graph.get_edges())
-//		{
-//			std::cout << e->get_source()->get_id() << "->" << e->get_target()->get_id();
-//			std::cout << ", " << e->get_capacity() << "/" << e->get_cost() << "; ";
-//		}
-//		std::cout << std::endl << std::endl;
+		viz_graph(show_viz, "Residual", &residual_graph);
+
 
 		// Schritt 3:
 		// Konstruieren eines f-augmentierenden Zykels Z in G f mit negativen Kosten.
 		// Falls keiner existiert: STOPP
 		std::list<const edge*> cycle;
 		double gamma = 0.0;
+
 		cc_find_negative_cycle(&residual_graph, &flow_per_edge, &cycle, &gamma);
 
 		if(cycle.empty())
 			break;
+
+		viz_cycle(show_viz, &cycle, gamma);
+
 
 		// Schritt 4:
 		// Verändern des b-Flusses entlang des Zykels um γ.
@@ -1080,23 +1075,20 @@ void algorithm::cycle_cancelling(
 				flow_per_edge[e] -= gamma;
 		}
 
-//		std::cout << "Flow: ";
-//		for(auto kvp : flow_per_edge)
-//		{
-//			std::cout << kvp.first->get_source()->get_id() << "->";
-//			std::cout << kvp.first->get_target()->get_id() << ", ";
-//			std::cout << kvp.second << "; ";
-//		}
-//		std::cout << std::endl << std::endl;
+		viz_flow(show_viz, &flow_per_edge);
+
 
 		// Schritt 5:
 		// Ab Schritt 2 wiederholen.
 	}
 
 	*minimum_cost_flow_found = true;
-	for(auto kvp : flow_per_edge)
+	for(const edge* e : full_graph->get_edges())
 	{
-		*minimum_cost_flow += kvp.first->get_cost() * kvp.second;
+		const double flow = flow_per_edge[e];
+		const double cost = e->get_cost();
+
+		*minimum_cost_flow += (flow * cost);
 	}
 
 	return;
@@ -1112,10 +1104,12 @@ void algorithm::cc_compute_b_flow(
 		undirected_edge_equal>* flow_per_edge)
 {
 	graph b_flow_graph(*full_graph);
-	double sum_source_flow = 0.0;
-	double sum_target_flow = 0.0;
+	double sum_of_super_source_flow = 0.0;
+	double sum_of_super_target_flow = 0.0;
 	std::vector<const vertex*> src_or_tgt_vert;
 
+	// Compute the flow from/to the super source/target
+	// Also save the vertices that provide/reveice flow
 	for(auto v : b_flow_graph.get_vertices())
 	{
 		assert(v->has_balance());
@@ -1126,19 +1120,23 @@ void algorithm::cc_compute_b_flow(
 
 		if(balance > 0.0)
 		{
-			sum_source_flow += balance;
+			sum_of_super_source_flow += balance;
 		}
 		else // if(balance < 0.0)
 		{
-			sum_target_flow += balance;
+			sum_of_super_target_flow += balance;
 		}
 
 		src_or_tgt_vert.push_back(v);
 	}
 
-	const vertex* super_source = b_flow_graph.add_vertex(nullptr, &sum_source_flow);
-	const vertex* super_target = b_flow_graph.add_vertex(nullptr, &sum_target_flow);
+	// Create two new vertices in the b_flow_graph for the super source/target
+	const vertex* super_source =
+		b_flow_graph.add_vertex(nullptr, &sum_of_super_source_flow);
+	const vertex* super_target =
+		b_flow_graph.add_vertex(nullptr, &sum_of_super_target_flow);
 
+	// Add edges from the super source/target to the provide/reveice flow vertices.
 	for(auto v : src_or_tgt_vert)
 	{
 		const double balance = v->get_balance();
@@ -1182,8 +1180,9 @@ void algorithm::cc_compute_b_flow(
 		&maximum_flow,
 		capacity_of_edge);
 
-	*b_flow_exist = (sum_source_flow == maximum_flow);
+	*b_flow_exist = (sum_of_super_source_flow == maximum_flow);
 
+	// Translate the edges of b_flow_graph to full_graph
 	for(const edge* e : full_graph->get_edges())
 	{
 		const double flow = flow_per_edge_internal[e];
@@ -1265,6 +1264,7 @@ void algorithm::cc_find_negative_cycle(
 {
 	graph search_graph(*residual_graph);
 
+	// Create a start_vertex and connect all other vertices with the start_vertex
 	const vertex* start_vertex = search_graph.add_vertex(nullptr, nullptr);
 	for(const vertex* v : search_graph.get_vertices())
 	{
@@ -1319,6 +1319,8 @@ void algorithm::cc_find_negative_cycle(
 				distances[target_vertex] = new_distance;
 				predecessor[target_vertex] = edge;
 
+				// In the last round of Bellman-Ford add all changed vertices.
+				// They can be potentiall part of the negative cycle
 				if(is_last_round)
 				{
 					changed_set.push_back(target_vertex);
@@ -1332,6 +1334,8 @@ void algorithm::cc_find_negative_cycle(
 		const vertex* v = changed_set.front();
 		std::set<const vertex*, compare_vertex_id> lookup;
 
+		// Follow vertex_count-times the predecessor.
+		// After that we are with v in the negative cycle.
 		for(std::uint32_t i = 0; i < vertex_count; ++i)
 		{
 			const edge* e = predecessor[v];
@@ -1339,6 +1343,8 @@ void algorithm::cc_find_negative_cycle(
 			continue;
 		}
 
+		// Add from v all vertices to the cycle list until we came back.
+		// Compute also gamma.
 		*gamma = std::numeric_limits<double>::infinity();
 		while(lookup.count(v) == 0)
 		{
@@ -1706,6 +1712,24 @@ void algorithm::viz_flow_change(
 	{
 		std::cout << "(" << kvp.first->get_source()->get_id() << ",";
 		std::cout << kvp.first->get_target()->get_id() << "), ";
+	}
+	std::cout << "with gamma=" << gamma << ".\n\n";
+	std::cout.flush();
+}
+
+void algorithm::viz_cycle(
+	const bool show_viz,
+	const std::list<const edge*>* cycle,
+	const double gamma)
+{
+	if(!show_viz)
+		return;
+
+	std::cout << "Change flow in cycle ";
+	for(const edge* e : *cycle)
+	{
+		std::cout << "(" << e->get_source()->get_id() << ",";
+		std::cout << e->get_target()->get_id() << "), ";
 	}
 	std::cout << "with gamma=" << gamma << ".\n\n";
 	std::cout.flush();

@@ -253,6 +253,14 @@ private:
 		const bool show_viz,
 		const std::list<std::pair<const edge*, bool>>* path_of_change,
 		const double gamma);
+
+	//
+	//
+	//
+	void viz_cycle(
+		const bool show_viz,
+		const std::list<const edge*>* cycle,
+		const double gamma);
 };
 
 }
