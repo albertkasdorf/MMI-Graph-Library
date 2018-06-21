@@ -7,6 +7,7 @@
 #include <sstream>
 #include <queue>
 #include <algorithm>
+#include <fstream>
 
 #include <graph.h>
 #include <graph_loader.h>
@@ -109,6 +110,53 @@ void practical_training::task00_debugging(void)
 //	ga.breadth_first_search(&gg_full, gv_start, &gg_res_bfs);
 //	ga.depth_first_search(&gg_full, gv_start, &gg_res_dfs);
 
+	// Save graph as Trivial Graph Format
+//	graph::loader ld;
+//	const graph::files file = graph::files::Kostenminimal3;
+//	graph::graph g;
+
+//	std::cout << "Loading graph file: ";
+//	std::cout << ld.file_name_get(file) << std::endl << std::endl;
+//	ld.load(file, g);
+
+//	std::fstream out("Kostenminimal3.tgf", std::ios::out | std::ios::trunc);
+
+//	for(const graph::vertex* v : g.get_vertices())
+//	{
+//		out << v->get_id() << "\t" << v->get_id() << "/" << v->get_balance() << std::endl;
+//	}
+//	out << "#" << std::endl;
+
+//	for(const graph::edge* e : g.get_edges())
+//	{
+//		out << e->get_source()->get_id() << "\t" << e->get_target()->get_id() << "\t";
+//		out << e->get_capacity() << "/" << e->get_cost() << std::endl;
+//	}
+//	out.close();
+
+
+//	// Check if double edges between vertices exist.
+//	graph::loader ld;
+//	graph::graph g;
+//	std::vector<const graph::edge*> double_edges;
+
+//	ld.load(graph::files::Kostenminimal3, g);
+
+//	for(const graph::vertex* v : g.get_vertices())
+//	{
+//		for(const graph::edge* ev : v->get_edges())
+//		{
+//			assert(ev->get_target()->get_id() != v->get_id());
+//			for(const graph::edge* eve : ev->get_target()->get_edges())
+//			{
+//				if(v->get_id() == eve->get_target()->get_id())
+//				{
+//					double_edges.push_back(ev);
+//					double_edges.push_back(eve);
+//				}
+//			}
+//		}
+//	}
 
 	return;
 }
@@ -423,7 +471,7 @@ void practical_training::task05_maximum_flow(void)
 void practical_training::task06_minimum_cost_flow(void)
 {
 	graph::loader graph_loader;
-	const graph::files graph_file = graph::files::Kostenminimal3;
+	const graph::files graph_file = graph::files::Kostenminimal1;
 	graph::graph full_graph;
 	graph::algorithm algorithm;
 	bool minimum_cost_flow_found = false;

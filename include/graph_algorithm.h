@@ -223,16 +223,36 @@ private:
 	//
 	//
 	void viz_flow(
-		std::unordered_map<
+		const bool show_viz,
+		const std::unordered_map<
 			const edge*,
 			double,
 			undirected_edge_hash,
-			undirected_edge_equal>& flow_per_edge);
+			undirected_edge_equal>* flow_per_edge);
 
 	//
 	//
 	//
-	void viz_residual(graph& residual_graph);
+	void viz_graph(
+		const bool show_viz,
+		const char* graph_type,
+		const graph* graph);
+
+	//
+	//
+	//
+	void viz_pseudo_source_target(
+		const bool show_viz,
+		const std::vector<const vertex*>* pseudo_source,
+		const std::vector<const vertex*>* pseudo_target);
+
+	//
+	//
+	//
+	void viz_flow_change(
+		const bool show_viz,
+		const std::list<std::pair<const edge*, bool>>* path_of_change,
+		const double gamma);
 };
 
 }

@@ -14,6 +14,7 @@
 #include <sstream>
 #include <string>
 #include <list>
+#include <functional>
 
 #include <graph_vertex.h>
 #include <graph.h>
@@ -1360,26 +1361,12 @@ void algorithm::successive_shortest_path(
 	double* minimum_cost_flow)
 {
 	const bool show_viz = false;
+
 	std::unordered_map<
 		const edge*,
 		double,
 		undirected_edge_hash,
 		undirected_edge_equal> flow_per_edge;
-
-
-	std::map<const vertex*, std::vector<const edge*>, compare_vertex_id> edges_of_vertices;
-	for(const vertex* v : full_graph->get_vertices())
-	{
-		edges_of_vertices.insert(std::make_pair(v, std::vector<const edge*>()));
-		for(const edge* e : full_graph->get_edges())
-		{
-			if(e->get_source()->get_id() == v->get_id() || e->get_target()->get_id() == v->get_id())
-			{
-				edges_of_vertices[v].push_back(e);
-			}
-		}
-	}
-
 
 
 	*minimum_cost_flow_found = false;
@@ -1398,8 +1385,7 @@ void algorithm::successive_shortest_path(
 		flow_per_edge.insert(std::make_pair(e, flow));
 	}
 
-	if(show_viz)
-		viz_flow(flow_per_edge);
+	viz_flow(show_viz, &flow_per_edge);
 
 	while(true)
 	{
@@ -1407,79 +1393,60 @@ void algorithm::successive_shortest_path(
 		// - Pseudo-Quellen: b(s) > b'(s)
 		// - Pseudo-Senken: b(t) < b'(t)
 		std::vector<const vertex*> pseudo_source, pseudo_target;
-		std::map<const vertex*, double, compare_vertex_id> b_prim;
+		std::map<const vertex*, double, compare_vertex_id> b_prime;
 
-//		for(const edge* e : full_graph->get_edges())
-//		{
-//			const double flow = flow_per_edge[e];
+		// b(v)
+		std::function<double(const vertex*)> fn_b = [](const vertex* v) {
+			return v->get_balance();
+		};
+		// b'(v)
+		std::function<double(const vertex*)> fn_b_prime = [&b_prime](const vertex* v) {
+			assert(b_prime.count(v) > 0);
+			return b_prime[v];
+		};
 
-//			const vertex* source = e->get_source();
-//			const bool source_not_found = b_prim.count(source) == 0;
+		// Compute values for b_prime
+		// δ+ outgoing edges
+		// δ- incoming edges
+		// b'(v) = sum[e∈δ+](f(e)) - sum[e∈δ-](f(e))
+		for(const edge* e : full_graph->get_edges())
+		{
+			const double flow = flow_per_edge[e];
 
-//			if(source_not_found)
-//				b_prim.insert(std::make_pair(source, 0.0));
-//			b_prim[source] += flow;
+			// Outgoing edge
+			const vertex* source = e->get_source();
+			const bool source_not_found = b_prime.count(source) == 0;
 
-//			const vertex* target = e->get_target();
-//			const bool target_not_found = b_prim.count(target) == 0;
+			if(source_not_found)
+				b_prime.insert(std::make_pair(source, 0.0));
+			b_prime[source] += flow;
 
-//			if(target_not_found)
-//				b_prim.insert(std::make_pair(target, 0.0));
-//			b_prim[target] += -flow;
-//		}
+			// Incoming edge
+			const vertex* target = e->get_target();
+			const bool target_not_found = b_prime.count(target) == 0;
 
+			if(target_not_found)
+				b_prime.insert(std::make_pair(target, 0.0));
+			b_prime[target] += -flow;
+		}
+
+		// Create two lists of pseudo_source(s) and pseudo_target(s)
 		for(const vertex* v : full_graph->get_vertices())
 		{
-			b_prim.insert(std::make_pair(v, 0.0));
-//			for(const edge* e : full_graph->get_edges())
-//			{
-//				if(e->get_source()->get_id() == v->get_id())
-//				{
-//					b_prim[v] += flow_per_edge[e];
-//				}
-
-//				if(e->get_target()->get_id() == v->get_id())
-//				{
-//					b_prim[v] -= flow_per_edge[e];
-//				}
-//			}
-			for(const edge* e : edges_of_vertices[v])
-			{
-				if(e->get_source()->get_id() == v->get_id())
-				{
-					b_prim[v] += flow_per_edge[e];
-				}
-
-				if(e->get_target()->get_id() == v->get_id())
-				{
-					b_prim[v] -= flow_per_edge[e];
-				}
-			}
-
-			const double balance = v->get_balance();
-			const double balance_prim = (b_prim.count(v) > 0) ? b_prim[v] : 0.0;
-
 			// s: b(s) - b'(s) > 0
 			// t: b(t) - b'(t) < 0
 			// n: b(t) - b'(t) = 0
-			if(balance > balance_prim)
+
+			if(fn_b(v) > fn_b_prime(v))
 				pseudo_source.push_back(v);
-			if(balance < balance_prim)
+
+			if(fn_b(v) < fn_b_prime(v))
 				pseudo_target.push_back(v);
 		}
 
-		if(show_viz)
-		{
-			std::cout << "Pseudo-Source: ";
-			for(const vertex* v : pseudo_source)
-				std::cout << v->get_id() << ", ";
-			std::cout << "\nPseudo-Target: ";
-			for(const vertex* v : pseudo_target)
-				std::cout << v->get_id() << ", ";
-			std::cout << "\n\n";
-		}
+		viz_pseudo_source_target(show_viz, &pseudo_source, &pseudo_target);
 
-		// Pseudo balance and vertex balance are equal.
+		// Pseudo balance b'(v) and vertex balance b(v) are equal.
 		if(pseudo_source.empty() && pseudo_target.empty())
 		{
 			*minimum_cost_flow_found = true;
@@ -1499,18 +1466,15 @@ void algorithm::successive_shortest_path(
 		// bzgl. c^f berechnen, sonst zu Schritt 6 gehen
 		graph residual_graph;
 
-		cc_create_residual_graph(
-			full_graph,
-			&flow_per_edge,
-			&residual_graph);
+		cc_create_residual_graph(full_graph, &flow_per_edge, &residual_graph);
 
-		if(show_viz)
-			viz_residual(residual_graph);
+		viz_graph(show_viz, "Residual", &residual_graph);
 
 		std::list<std::pair<const edge*, bool>> path_of_change;
 		double min_capacity = std::numeric_limits<double>::infinity();
 		std::pair<const vertex*, const vertex*> path_start_end = std::make_pair(nullptr, nullptr);
 
+		// Searching for a (s,t)-path.
 		for(const vertex* source : pseudo_source)
 		{
 			std::map<const vertex*, const edge*, compare_vertex_id> predecessor;
@@ -1529,12 +1493,15 @@ void algorithm::successive_shortest_path(
 					e_to_pred = predecessor[e_to_pred->get_source()];
 				}
 
+				// There exist no path
 				if(path.empty())
 					continue;
 
+				// Path to the source does not exist.
 				if(path.front()->get_source()->get_id() != source->get_id())
 					continue;
 
+				// Translate residual_graph edges to full_graph edges
 				for(const edge* e : path)
 				{
 					const edge* e_from_full_graph = full_graph->get_edge(e, false);
@@ -1553,6 +1520,9 @@ void algorithm::successive_shortest_path(
 				break;
 			}
 
+			// Hint:
+			// If we do not found a flow from the source to a target,
+			// we will never found a flow.
 			if(path_of_change.empty())
 				continue;
 			else
@@ -1568,24 +1538,14 @@ void algorithm::successive_shortest_path(
 
 		// Schritt 4:
 		// Flusserhöhung durchführen und ggf. Pseudo-Quellen/-Senken entfernen
-		const double change_in_s =
-			path_start_end.first->get_balance() - b_prim[path_start_end.first];
-		const double change_in_t =
-			b_prim[path_start_end.second] - path_start_end.second->get_balance();
+		const double diff_b_and_b_prime =
+			path_start_end.first->get_balance() - b_prime[path_start_end.first];
+		const double diff_b_prime_and_b =
+			b_prime[path_start_end.second] - path_start_end.second->get_balance();
 		const double gamma =
-			std::min(min_capacity, std::min(change_in_s, change_in_t));
+			std::min(min_capacity, std::min(diff_b_and_b_prime, diff_b_prime_and_b));
 
-		if(show_viz)
-		{
-			std::cout << "Change flow between ";
-			for(std::pair<const edge*, bool> kvp : path_of_change)
-			{
-				std::cout << "(" << kvp.first->get_source()->get_id() << ",";
-				std::cout << kvp.first->get_target()->get_id() << "), ";
-			}
-			std::cout << "with gamma=" << gamma << ".\n\n";
-			std::cout.flush();
-		}
+		viz_flow_change(show_viz, &path_of_change, gamma);
 
 		for(std::pair<const edge*, bool> kvp : path_of_change)
 		{
@@ -1593,8 +1553,7 @@ void algorithm::successive_shortest_path(
 			flow_per_edge[kvp.first] += (gamma * sign);
 		}
 
-		if(show_viz)
-			viz_flow(flow_per_edge);
+		viz_flow(show_viz, &flow_per_edge);
 
 		// Schritt 5:
 		// Gehen Sie zu Schritt 3
@@ -1682,14 +1641,18 @@ void algorithm::ssp_moore_bellman_ford(
 }
 
 void algorithm::viz_flow(
-	std::unordered_map<
+	const bool show_viz,
+	const std::unordered_map<
 		const edge*,
 		double,
 		undirected_edge_hash,
-		undirected_edge_equal>& flow_per_edge)
+		undirected_edge_equal>* flow_per_edge)
 {
+	if(!show_viz)
+		return;
+
 	std::cout << "Flow: ";
-	for(auto kvp : flow_per_edge)
+	for(auto kvp : *flow_per_edge)
 	{
 		std::cout << kvp.first->get_source()->get_id() << "->";
 		std::cout << kvp.first->get_target()->get_id() << ", ";
@@ -1698,10 +1661,14 @@ void algorithm::viz_flow(
 	std::cout << std::endl << std::endl;
 }
 
-void algorithm::viz_residual(graph& residual_graph)
+void algorithm::viz_graph(
+	const bool show_viz, const char* graph_type, const graph* graph)
 {
-	std::cout << "Residual: ";
-	for(const edge* e : residual_graph.get_edges())
+	if(!show_viz)
+		return;
+
+	std::cout << graph_type << ": ";
+	for(const edge* e : graph->get_edges())
 	{
 		std::cout << e->get_source()->get_id() << "->" << e->get_target()->get_id();
 		std::cout << ", " << e->get_capacity() << "/" << e->get_cost() << "; ";
@@ -1709,6 +1676,40 @@ void algorithm::viz_residual(graph& residual_graph)
 	std::cout << std::endl << std::endl;
 }
 
+void algorithm::viz_pseudo_source_target(
+	const bool show_viz,
+	const std::vector<const vertex*>* pseudo_source,
+	const std::vector<const vertex*>* pseudo_target)
+{
+	if(!show_viz)
+		return;
+
+	std::cout << "Pseudo-Source: ";
+	for(const vertex* v : *pseudo_source)
+		std::cout << v->get_id() << ", ";
+	std::cout << "\nPseudo-Target: ";
+	for(const vertex* v : *pseudo_target)
+		std::cout << v->get_id() << ", ";
+	std::cout << "\n\n";
+}
+
+void algorithm::viz_flow_change(
+	const bool show_viz,
+	const std::list<std::pair<const edge*, bool>>* path_of_change,
+	const double gamma)
+{
+	if(!show_viz)
+		return;
+
+	std::cout << "Change flow between ";
+	for(std::pair<const edge*, bool> kvp : *path_of_change)
+	{
+		std::cout << "(" << kvp.first->get_source()->get_id() << ",";
+		std::cout << kvp.first->get_target()->get_id() << "), ";
+	}
+	std::cout << "with gamma=" << gamma << ".\n\n";
+	std::cout.flush();
+}
 
 
 }
