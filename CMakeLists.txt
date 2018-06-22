@@ -24,7 +24,6 @@ set(HEADERS
 	include/practical_training.h
 	include/graph_comparer.h)
 set(SOURCES
-	src/main.cpp
 	src/graph_algorithm.cpp
 	src/graph.cpp
 	src/graph_loader.cpp
@@ -35,6 +34,29 @@ set(SOURCES
 	src/graph_vertex.cpp
 	src/graph_vertex_with_balance.cpp
 	src/graph_comparer.cpp)
+set(SOURCES_MAIN
+	src/main.cpp)
+set(SOURCES_TEST
+	test/test.cpp)
+set(FILE_NAME_TEST ${PROJECT_NAME}_test)
 
+#
+# Use gtest in ROS program
+# https://ysonggit.github.io/coding/2014/12/19/use-gtest-in-ros-program.html
+#
+enable_testing()
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS})
+
+# Prepare "Catch" library for other executables
+set(CATCH_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/catch2)
+add_library(Catch INTERFACE)
+target_include_directories(Catch INTERFACE ${CATCH_INCLUDE_DIR})
+
+# Main executable
 add_custom_target(Headers SOURCES ${HEADERS})
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME} ${SOURCES_MAIN} ${SOURCES})
+
+# Test executable
+add_executable(${FILE_NAME_TEST} ${SOURCES_TEST} ${SOURCES})
+target_link_libraries(${FILE_NAME_TEST} ${GTEST_LIBRARIES} pthread)
