@@ -1487,6 +1487,7 @@ void algorithm::successive_shortest_path(
 			flow = e->get_capacity();
 
 		flow_per_edge.insert(std::make_pair(e, flow));
+		assert(flow_per_edge[e] >= 0);
 	}
 
 	viz_flow(show_viz, &flow_per_edge);
@@ -1510,29 +1511,7 @@ void algorithm::successive_shortest_path(
 		};
 
 		// Compute values for b_prime
-		// δ+ outgoing edges
-		// δ- incoming edges
-		// b'(v) = sum[e∈δ+](f(e)) - sum[e∈δ-](f(e))
-		for(const edge* e : full_graph->get_edges())
-		{
-			const double flow = flow_per_edge[e];
-
-			// Outgoing edge
-			const vertex* source = e->get_source();
-			const bool source_not_found = b_prime.count(source) == 0;
-
-			if(source_not_found)
-				b_prime.insert(std::make_pair(source, 0.0));
-			b_prime[source] += flow;
-
-			// Incoming edge
-			const vertex* target = e->get_target();
-			const bool target_not_found = b_prime.count(target) == 0;
-
-			if(target_not_found)
-				b_prime.insert(std::make_pair(target, 0.0));
-			b_prime[target] += -flow;
-		}
+		compute_b_prime(full_graph, &flow_per_edge, &b_prime);
 
 		// Create two lists of pseudo_source(s) and pseudo_target(s)
 		for(const vertex* v : full_graph->get_vertices())
@@ -1583,7 +1562,8 @@ void algorithm::successive_shortest_path(
 		{
 			std::map<const vertex*, const edge*, compare_vertex_id> predecessor;
 
-			ssp_moore_bellman_ford(&residual_graph, source, &predecessor);
+			moore_bellman_ford(
+				&residual_graph, source, &predecessor, nullptr, nullptr);
 
 			for(const vertex* target : pseudo_target)
 			{
@@ -1655,6 +1635,8 @@ void algorithm::successive_shortest_path(
 		{
 			const double sign = (kvp.second) ? 1.0 : -1.0;
 			flow_per_edge[kvp.first] += (gamma * sign);
+
+			assert(flow_per_edge[kvp.first] >= 0.0);
 		}
 
 		viz_flow(show_viz, &flow_per_edge);
@@ -1680,68 +1662,34 @@ void algorithm::successive_shortest_path(
 	return;
 }
 
-void algorithm::ssp_moore_bellman_ford(
+void algorithm::compute_b_prime(
 	const graph* g,
-	const vertex* start_vertex,
-	std::map<const vertex*, const edge*, compare_vertex_id>* predecessor)
+	const std::unordered_map<
+		const edge*,
+		double,
+		undirected_edge_hash,
+		undirected_edge_equal>* flow_per_edge,
+	std::map<
+		const vertex*,
+		double,
+		compare_vertex_id>* b_prime)
 {
-	// Edge from the predecessor vertex. (target == vertex)
-	std::map<const vertex*, double> distances;
-
-	// Initialize distances and predecessor
-	for(const vertex* v : g->get_vertices())
-	{
-		double initial_distance = std::numeric_limits<double>::infinity();
-
-		if(v->get_id() == start_vertex->get_id())
-		{
-			initial_distance = 0.0;
-		}
-
-		distances.insert(
-			std::make_pair(v, initial_distance));
-
-		(*predecessor).insert(
-			std::make_pair(v, nullptr));
-	}
-
-	// Compute the distances and the predecessor
-	for(std::uint32_t i = 0; i < g->get_vertex_count() - 1; ++i)
-	{
-		for(const edge* e : g->get_edges())
-		{
-			const vertex* source_vertex = e->get_source();
-			const vertex* target_vertex = e->get_target();
-
-			const double source_distance = distances[source_vertex];
-			const double target_distance = distances[target_vertex];
-
-			const double new_distance = source_distance + e->get_cost();
-
-			if(new_distance < target_distance)
-			{
-				distances[target_vertex] = new_distance;
-				(*predecessor)[target_vertex] = e;
-			}
-		}
-	}
-
-	// Detect the negative cycle.
+	// Compute values for b_prime
+	// δ+ outgoing edges
+	// δ- incoming edges
+	// b'(v) = sum[e∈δ+](f(e)) - sum[e∈δ-](f(e))
 	for(const edge* e : g->get_edges())
 	{
-		const vertex* source_vertex = e->get_source();
-		const vertex* target_vertex = e->get_target();
+		const double flow = flow_per_edge->at(e);
 
-		const double source_distance = distances[source_vertex];
-		const double target_distance = distances[target_vertex];
+		// Outgoing edge
+		const vertex* source = e->get_source();
+		(*b_prime)[source] += flow;
 
-		const double new_distance = source_distance + e->get_cost();
-
-		// SSP can not exist negative cycle
-		assert(!(new_distance < target_distance));
+		// Incoming edge
+		const vertex* target = e->get_target();
+		(*b_prime)[target] += -flow;
 	}
-
-	return;
 }
 
 void algorithm::viz_flow(

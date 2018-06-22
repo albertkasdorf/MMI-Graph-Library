@@ -451,16 +451,18 @@ const edge* graph::get_edge(
 		{
 			if(deq(foreign_edge, graph_edge))
 			{
+				assert(!result_edge);
 				result_edge = graph_edge;
-				break;
+				//break;
 			}
 		}
 		else
 		{
 			if(ueq(foreign_edge, graph_edge))
 			{
+				assert(!result_edge);
 				result_edge = graph_edge;
-				break;
+				//break;
 			}
 		}
 	}

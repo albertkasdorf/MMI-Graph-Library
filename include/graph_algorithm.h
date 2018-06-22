@@ -128,6 +128,18 @@ public:
 	//
 	void successive_shortest_path(const graph*, bool*, double*);
 
+	void compute_b_prime(
+		const graph* g,
+		const std::unordered_map<
+			const edge*,
+			double,
+			undirected_edge_hash,
+			undirected_edge_equal>* flow_per_edge,
+		std::map<
+			const vertex*,
+			double,
+			compare_vertex_id>* b_prime);
+
 private:
 	void depth_first_search_recursive(
 		const graph*,
@@ -217,14 +229,6 @@ private:
 			undirected_edge_equal>* flow_per_edge,
 		std::list<const edge*>* cycle,
 		double* gamma);
-
-	//
-	//
-	//
-	void ssp_moore_bellman_ford(
-		const graph* graph,
-		const vertex* start_vertex,
-		std::map<const vertex*, const edge*, compare_vertex_id>* predecessor);
 
 	//
 	//
