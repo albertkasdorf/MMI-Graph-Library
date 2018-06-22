@@ -95,6 +95,13 @@ public:
 		std::map<const vertex*, double>*,
 		bool*);
 
+	void moore_bellman_ford(
+		const graph* g,
+		const vertex* start_vertex,
+		std::map<const vertex*, const edge*, compare_vertex_id>* predecessor,
+		std::map<const vertex*, double>* distances,
+		bool* negative_cycle_found);
+
 	//
 	// Edmonds-Karp
 	//

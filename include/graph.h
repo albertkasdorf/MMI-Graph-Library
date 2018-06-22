@@ -73,7 +73,10 @@ public:
 	// Add a new directed edge to the graph. (With cost and capacity)
 	//
 	void add_directed_edge(
-		const uint32_t, const uint32_t, const double, const double);
+		const uint32_t source_id,
+		const uint32_t target_id,
+		const double cost,
+		const double capacity);
 
 	//
 	// Get all edges of the graph.

@@ -90,9 +90,13 @@ const vertex* graph::add_vertex(const uint32_t* id, const double* balance)
 	if(id == nullptr)
 	{
 		std::uint32_t max_id = 0;
-		for(auto item : vertices)
-			max_id = std::max(max_id, item.second->get_id());
-		v = std::make_shared<vertex>(++max_id);
+		if(!vertices.empty())
+		{
+			for(auto item : vertices)
+				max_id = std::max(max_id, item.second->get_id());
+			++max_id;
+		}
+		v = std::make_shared<vertex>(max_id);
 	}
 	else
 	{

@@ -779,6 +779,104 @@ void algorithm::moore_bellman_ford(
 	return;
 }
 
+void algorithm::moore_bellman_ford(
+	const graph* g,
+	const vertex* start_vertex,
+	std::map<const vertex*, const edge*, compare_vertex_id>* predecessor,
+	std::map<const vertex*, double>* distances,
+	bool* negative_cycle_found)
+{
+	std::map<const vertex*, const edge*, compare_vertex_id> _predecessor;
+	std::map<const vertex*, double> _distances;
+	bool _negative_cycle_found = false;
+
+	if(!predecessor)
+		predecessor = &_predecessor;
+	if(!distances)
+		distances = &_distances;
+	if(!negative_cycle_found)
+		negative_cycle_found = &_negative_cycle_found;
+
+
+	// Initialize distances and predecessor
+	for(auto vertex : g->get_vertices())
+	{
+		double initial_distance = std::numeric_limits<double>::infinity();
+
+		if(vertex->get_id() == start_vertex->get_id())
+		{
+			initial_distance = 0.0;
+		}
+
+		distances->insert(
+			std::make_pair(vertex, initial_distance));
+
+		predecessor->insert(
+			std::make_pair(vertex, nullptr));
+	}
+
+	// Compute the distances and the predecessor
+	for(std::uint32_t i = 0; i < g->get_vertex_count() - 1; ++i)
+	{
+		for(const edge* e : g->get_edges())
+		{
+			const vertex* source_vertex = e->get_source();
+			const vertex* target_vertex = e->get_target();
+
+			const double source_distance = (*distances)[source_vertex];
+			const double target_distance = (*distances)[target_vertex];
+
+			double cost = 0.0;
+
+			if(e->has_cost())
+				cost = e->get_cost();
+			else
+				if(e->has_weight())
+					cost = e->get_weight();
+				else
+					assert(false);
+
+			const double new_distance = source_distance + cost;
+
+			if(new_distance < target_distance)
+			{
+				(*distances)[target_vertex] = new_distance;
+				(*predecessor)[target_vertex] = e;
+			}
+		}
+	}
+
+	// Detect the negative cycle.
+	for(const edge* e : g->get_edges())
+	{
+		const vertex* source_vertex = e->get_source();
+		const vertex* target_vertex = e->get_target();
+
+		const double source_distance = (*distances)[source_vertex];
+		const double target_distance = (*distances)[target_vertex];
+
+		double cost = 0.0;
+
+		if(e->has_cost())
+			cost = e->get_cost();
+		else
+			if(e->has_weight())
+				cost = e->get_weight();
+			else
+				assert(false);
+
+		const double new_distance = source_distance + cost;
+
+		if(new_distance < target_distance)
+		{
+			*negative_cycle_found = true;
+			break;
+		}
+	}
+
+	return;
+}
+
 void algorithm::edmonds_karp(
 	const graph* full_graph,
 	const vertex* source_vertex,
