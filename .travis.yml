@@ -4,12 +4,11 @@ compiler:
   - gcc
 install:
   - sudo apt-get install libgtest-dev
-script:
   - cd /usr/src/gtest
-  - ls -al
-  - sudo cmake ./CMakeLists.txt
+  - sudo cmake .
   - sudo make
-  - sudo cp *.a /usr/lib
-  - cd -
+  - sudo mv libgtest* /usr/lib/
+  - cd "${TRAVIS_BUILD_DIR}"
+script:
   - cmake -G "Unix Makefiles" .
   - make
