@@ -20,7 +20,7 @@ TEST(graph_algorithm, moore_bellman_ford)
 	using namespace graph;
 
 	graph::graph gg;
-	graph::algorithm ga;
+	algorithm ga;
 	std::unordered_map<std::uint32_t, const edge*> predecessor;
 	std::unordered_map<std::uint32_t, double> distances;
 
@@ -49,8 +49,8 @@ TEST(graph_algorithm, moore_bellman_ford_from_slides)
 {
 	using namespace graph;
 
-	graph::graph gg;
-	graph::algorithm ga;
+	::graph::graph gg;
+	algorithm ga;
 	std::unordered_map<std::uint32_t, const edge*> predecessor;
 	std::unordered_map<std::uint32_t, double> distances;
 
@@ -268,7 +268,7 @@ TEST(graph_graph, return_edges)
 {
 	using namespace graph;
 
-	graph::graph g;
+	::graph::graph g;
 	edge e0, e1;
 	const edge* e00, *e11;
 	vertex v0(0), v1(1);

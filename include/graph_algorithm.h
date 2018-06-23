@@ -13,7 +13,7 @@ namespace graph
 class graph;
 class vertex;
 class edge;
-class compare_vertex_id;
+struct compare_vertex_id;
 struct undirected_edge_hash;
 struct undirected_edge_equal;
 
