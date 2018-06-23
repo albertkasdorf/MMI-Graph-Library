@@ -7,9 +7,9 @@ install:
 script:
   - cd /usr/src/gtest
   - ls -al
-  - sudo cmake CMakeLists.txt
-  - sudo make
-  - sudo cp *.a /usr/lib
+  - cmake CMakeLists.txt
+  - make
+  - cp *.a /usr/lib
   - cd -
   - cmake -G "Unix Makefiles" .
   - make
