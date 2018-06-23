@@ -79,27 +79,20 @@ public:
 	// Dijkstra-Algorithm
 	//
 	void dijkstra(
-		const graph*,
-		const vertex*,
-		graph*,
-		std::map<const vertex*, double>*,
-		bool*);
+		const graph* full_graph,
+		const vertex* start_vertex,
+		std::unordered_map<std::uint32_t, const edge*>* predecessor,
+		std::unordered_map<std::uint32_t, double>* distances,
+		bool* negative_weights_found);
 
 	//
 	// Moore-Bellman-Ford-Algorithm
 	//
 	void moore_bellman_ford(
-		const graph*,
-		const vertex*,
-		graph*,
-		std::map<const vertex*, double>*,
-		bool*);
-
-	void moore_bellman_ford(
 		const graph* g,
 		const vertex* start_vertex,
-		std::map<const vertex*, const edge*, compare_vertex_id>* predecessor,
-		std::map<const vertex*, double>* distances,
+		std::unordered_map<std::uint32_t, const edge*>* predecessor,
+		std::unordered_map<std::uint32_t, double>* distances,
 		bool* negative_cycle_found);
 
 	//

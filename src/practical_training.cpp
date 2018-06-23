@@ -383,12 +383,12 @@ void practical_training::task04_shortest_path(void)
 	const graph::files graph_file = graph::files::Wege1;
 	const std::uint32_t start_vertex_id = 2;
 	const bool create_directed_graph = true;
-	graph::graph g, dijkstra_spt, mbf_spt;
+	graph::graph g;
 	const graph::vertex* start_vertex = nullptr;
 	graph::algorithm graph_algorithm;
 	bool negative_weights_found = false;
 	bool negative_cycle_found = false;
-	std::map<const graph::vertex*, double> dijkstra_distance, mbf_distance;
+	std::unordered_map<std::uint32_t, double> dijkstra_distance, mbf_distance;
 
 	std::cout << "Loading graph file: ";
 	std::cout << graph_loader.file_name_get(graph_file) << std::endl << std::endl;
@@ -397,7 +397,7 @@ void practical_training::task04_shortest_path(void)
 
 	std::cout << "=== Dijkstra ===" << std::endl;
 	graph_algorithm.dijkstra(
-		&g, start_vertex, &dijkstra_spt, &dijkstra_distance, &negative_weights_found);
+		&g, start_vertex, nullptr, &dijkstra_distance, &negative_weights_found);
 	if(negative_weights_found)
 	{
 		std::cout << "=> Negative weights found." << std::endl;
@@ -406,7 +406,7 @@ void practical_training::task04_shortest_path(void)
 
 	std::cout << "=== Moore Bellman Ford ===" << std::endl;
 	graph_algorithm.moore_bellman_ford(
-		&g, start_vertex, &mbf_spt, &mbf_distance, &negative_cycle_found);
+		&g, start_vertex, nullptr, &mbf_distance, &negative_cycle_found);
 	if(negative_cycle_found)
 	{
 		std::cout << "=> Negative cycle found." << std::endl;
@@ -416,11 +416,11 @@ void practical_training::task04_shortest_path(void)
 
 void practical_training::print_shortest_path_result(
 	const graph::vertex* start_vertex,
-	const std::map<const graph::vertex*, double>* distance)
+	const std::unordered_map<std::uint32_t, double>* distance)
 {
 	for(auto kvp : *distance)
 	{
-		std::cout << "[" << start_vertex->get_id() << "->" << kvp.first->get_id() << "] = ";
+		std::cout << "[" << start_vertex->get_id() << "->" << kvp.first << "] = ";
 		std::cout << kvp.second << " | ";
 	}
 	std::cout << std::endl << std::endl;
@@ -481,14 +481,14 @@ void practical_training::task06_minimum_cost_flow(void)
 	std::cout << graph_loader.file_name_get(graph_file) << std::endl << std::endl;
 	graph_loader.load(graph_file, full_graph);
 
-//	std::cout << "=== Cycle Cancelling ===" << std::endl;
-//	algorithm.cycle_cancelling(
-//		&full_graph, &minimum_cost_flow_found, &minimum_cost_flow);
-//	if(minimum_cost_flow_found)
-//		std::cout << "Minimal cost flow is " << minimum_cost_flow << "\n";
-//	else
-//		std::cout << "Minimal cost flow not found.\n";
-//	std::cout << "\n";
+	std::cout << "=== Cycle Cancelling ===" << std::endl;
+	algorithm.cycle_cancelling(
+		&full_graph, &minimum_cost_flow_found, &minimum_cost_flow);
+	if(minimum_cost_flow_found)
+		std::cout << "Minimal cost flow is " << minimum_cost_flow << "\n";
+	else
+		std::cout << "Minimal cost flow not found.\n";
+	std::cout << "\n";
 
 	std::cout << "=== Successive Shortest Path ===\n";
 	algorithm.successive_shortest_path_on_residual(

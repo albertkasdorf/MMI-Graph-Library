@@ -1,6 +1,7 @@
 #pragma once
 #include <chrono>
 #include <string>
+#include <unordered_map>
 #include <graph.h>
 #include <graph_vertex.h>
 
@@ -28,6 +29,6 @@ private:
 		const graph::vertex*);
 
 	void print_shortest_path_result(
-		const graph::vertex*,
-		const std::map<const graph::vertex*, double>*);
+		const graph::vertex* start_vertex,
+		const std::unordered_map<std::uint32_t, double>* distance);
 };

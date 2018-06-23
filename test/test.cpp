@@ -8,6 +8,7 @@
 #include <graph_edge.h>
 #include <graph_files.h>
 #include <map>
+#include <tuple>
 
 TEST(always_true, expect_true)
 {
@@ -20,8 +21,8 @@ TEST(graph_algorithm, moore_bellman_ford)
 
 	graph::graph gg;
 	graph::algorithm ga;
-	std::map<const vertex*, const edge*, compare_vertex_id> predecessor;
-	std::map<const vertex*, double> distances;
+	std::unordered_map<std::uint32_t, const edge*> predecessor;
+	std::unordered_map<std::uint32_t, double> distances;
 
 	const vertex* v0 = gg.add_vertex(nullptr, nullptr);
 	const vertex* v1 = gg.add_vertex(nullptr, nullptr);
@@ -33,13 +34,13 @@ TEST(graph_algorithm, moore_bellman_ford)
 
 	ga.moore_bellman_ford(&gg, v0, &predecessor, &distances, nullptr);
 
-	EXPECT_EQ(distances[v0], 0);
-	EXPECT_EQ(distances[v1], -5.0);
-	EXPECT_EQ(distances[v2], -2.0);
+	EXPECT_EQ(distances[v0->get_id()], 0);
+	EXPECT_EQ(distances[v1->get_id()], -5.0);
+	EXPECT_EQ(distances[v2->get_id()], -2.0);
 
-	EXPECT_EQ(predecessor[v0], nullptr);
-	EXPECT_EQ(predecessor[v1]->get_source()->get_id(), v0->get_id());
-	EXPECT_EQ(predecessor[v2]->get_source()->get_id(), v0->get_id());
+	EXPECT_EQ(predecessor[v0->get_id()], nullptr);
+	EXPECT_EQ(predecessor[v1->get_id()]->get_source()->get_id(), v0->get_id());
+	EXPECT_EQ(predecessor[v2->get_id()]->get_source()->get_id(), v0->get_id());
 
 	return;
 }
@@ -50,8 +51,8 @@ TEST(graph_algorithm, moore_bellman_ford_from_slides)
 
 	graph::graph gg;
 	graph::algorithm ga;
-	std::map<const vertex*, const edge*, compare_vertex_id> predecessor;
-	std::map<const vertex*, double> distances;
+	std::unordered_map<std::uint32_t, const edge*> predecessor;
+	std::unordered_map<std::uint32_t, double> distances;
 
 	const vertex* s = gg.add_vertex(nullptr, nullptr);
 	const vertex* a = gg.add_vertex(nullptr, nullptr);
@@ -68,17 +69,17 @@ TEST(graph_algorithm, moore_bellman_ford_from_slides)
 
 	ga.moore_bellman_ford(&gg, s, &predecessor, &distances, nullptr);
 
-	EXPECT_EQ(distances[s], 0);
-	EXPECT_EQ(distances[a], 7);
-	EXPECT_EQ(distances[b], 3);
-	EXPECT_EQ(distances[c], 2);
-	EXPECT_EQ(distances[d], 3);
+	EXPECT_EQ(distances[s->get_id()], 0);
+	EXPECT_EQ(distances[a->get_id()], 7);
+	EXPECT_EQ(distances[b->get_id()], 3);
+	EXPECT_EQ(distances[c->get_id()], 2);
+	EXPECT_EQ(distances[d->get_id()], 3);
 
-	EXPECT_EQ(predecessor[s], nullptr);
-	EXPECT_EQ(predecessor[a]->get_source()->get_id(), s->get_id());
-	EXPECT_EQ(predecessor[b]->get_source()->get_id(), s->get_id());
-	EXPECT_EQ(predecessor[c]->get_source()->get_id(), a->get_id());
-	EXPECT_EQ(predecessor[d]->get_source()->get_id(), c->get_id());
+	EXPECT_EQ(predecessor[s->get_id()], nullptr);
+	EXPECT_EQ(predecessor[a->get_id()]->get_source()->get_id(), s->get_id());
+	EXPECT_EQ(predecessor[b->get_id()]->get_source()->get_id(), s->get_id());
+	EXPECT_EQ(predecessor[c->get_id()]->get_source()->get_id(), a->get_id());
+	EXPECT_EQ(predecessor[d->get_id()]->get_source()->get_id(), c->get_id());
 
 	return;
 }
@@ -91,8 +92,8 @@ TEST(graph_algorithm, moore_bellman_ford_with_wege1)
 	const graph::vertex* v0 = nullptr;
 	const graph::vertex* v2 = nullptr;
 
-	std::map<const graph::vertex*, const graph::edge*, graph::compare_vertex_id> predecessor;
-	std::map<const graph::vertex*, double> distances;
+	std::unordered_map<std::uint32_t, const graph::edge*> predecessor;
+	std::unordered_map<std::uint32_t, double> distances;
 	bool negative_cycle_found = false;
 
 	gl.load(graph::files::Wege1, gg, true);
@@ -101,7 +102,7 @@ TEST(graph_algorithm, moore_bellman_ford_with_wege1)
 
 	ga.moore_bellman_ford(&gg, v2, &predecessor, &distances, &negative_cycle_found);
 
-	EXPECT_EQ(distances[v0], 6);
+	EXPECT_EQ(distances[v0->get_id()], 6);
 	EXPECT_FALSE(negative_cycle_found);
 
 	return;
@@ -115,8 +116,8 @@ TEST(graph_algorithm, moore_bellman_ford_with_wege2)
 	const graph::vertex* v0 = nullptr;
 	const graph::vertex* v2 = nullptr;
 
-	std::map<const graph::vertex*, const graph::edge*, graph::compare_vertex_id> predecessor;
-	std::map<const graph::vertex*, double> distances;
+	std::unordered_map<std::uint32_t, const graph::edge*> predecessor;
+	std::unordered_map<std::uint32_t, double> distances;
 	bool negative_cycle_found = false;
 
 	gl.load(graph::files::Wege2, gg, true);
@@ -125,7 +126,7 @@ TEST(graph_algorithm, moore_bellman_ford_with_wege2)
 
 	ga.moore_bellman_ford(&gg, v2, &predecessor, &distances, &negative_cycle_found);
 
-	EXPECT_EQ(distances[v0], 2);
+	EXPECT_EQ(distances[v0->get_id()], 2);
 	EXPECT_FALSE(negative_cycle_found);
 
 	return;
@@ -138,8 +139,8 @@ TEST(graph_algorithm, moore_bellman_ford_with_wege3)
 	graph::algorithm ga;
 	const graph::vertex* v2 = nullptr;
 
-	std::map<const graph::vertex*, const graph::edge*, graph::compare_vertex_id> predecessor;
-	std::map<const graph::vertex*, double> distances;
+	std::unordered_map<std::uint32_t, const graph::edge*> predecessor;
+	std::unordered_map<std::uint32_t, double> distances;
 	bool negative_cycle_found = false;
 
 	gl.load(graph::files::Wege3, gg, true);
@@ -161,8 +162,8 @@ TEST(DISABLED_graph_algorithm, moore_bellman_ford_with_g_1_2_directed)
 	const graph::vertex* v0 = nullptr;
 	const graph::vertex* v1 = nullptr;
 
-	std::map<const graph::vertex*, const graph::edge*, graph::compare_vertex_id> predecessor;
-	std::map<const graph::vertex*, double> distances;
+	std::unordered_map<std::uint32_t, const graph::edge*> predecessor;
+	std::unordered_map<std::uint32_t, double> distances;
 	bool negative_cycle_found = false;
 
 	gl.load(graph::files::G_1_2, gg, true);
@@ -171,7 +172,7 @@ TEST(DISABLED_graph_algorithm, moore_bellman_ford_with_g_1_2_directed)
 
 	ga.moore_bellman_ford(&gg, v0, &predecessor, &distances, &negative_cycle_found);
 
-	EXPECT_NEAR(distances[v1], 5.54417, 0.00001);
+	EXPECT_NEAR(distances[v1->get_id()], 5.54417, 0.00001);
 	EXPECT_FALSE(negative_cycle_found);
 
 	return;
@@ -186,8 +187,8 @@ TEST(DISABLED_graph_algorithm, moore_bellman_ford_with_g_1_2_undirected)
 	const graph::vertex* v0 = nullptr;
 	const graph::vertex* v1 = nullptr;
 
-	std::map<const graph::vertex*, const graph::edge*, graph::compare_vertex_id> predecessor;
-	std::map<const graph::vertex*, double> distances;
+	std::unordered_map<std::uint32_t, const graph::edge*> predecessor;
+	std::unordered_map<std::uint32_t, double> distances;
 	bool negative_cycle_found = false;
 
 	gl.load(graph::files::G_1_2, gg, false);
@@ -196,7 +197,7 @@ TEST(DISABLED_graph_algorithm, moore_bellman_ford_with_g_1_2_undirected)
 
 	ga.moore_bellman_ford(&gg, v0, &predecessor, &distances, &negative_cycle_found);
 
-	EXPECT_NEAR(distances[v1], 2.36796, 0.00001);
+	EXPECT_NEAR(distances[v1->get_id()], 2.36796, 0.00001);
 	EXPECT_FALSE(negative_cycle_found);
 
 	return;
@@ -504,22 +505,63 @@ TEST(graph_algorithm, successive_shortest_path_kostenminimal6)
 	EXPECT_EQ(minimum_cost_flow, 16.0);
 }
 
+TEST(graph_algorithm, successive_shortest_path_on_residual_kostenminimal)
+{
+	using namespace graph;
+
+	std::vector<std::tuple<files, double, bool>> testcases = {
+		std::make_tuple(files::Kostenminimal1, 3.0, true),
+		std::make_tuple(files::Kostenminimal2, 0.0, false),
+		std::make_tuple(files::Kostenminimal4, 0.0, true),
+		std::make_tuple(files::Kostenminimal6, 16.0, true),
+	};
+
+	for(const std::tuple<files, double, bool> testcase : testcases)
+	{
+		graph::graph gg;
+		loader gl;
+		algorithm ga;
+
+		bool minimum_cost_flow_found = false;
+		double minimum_cost_flow = 0.0;
+
+		gl.load(std::get<0>(testcase), gg);
+
+		ga.successive_shortest_path_on_residual(
+			&gg, &minimum_cost_flow_found, &minimum_cost_flow);
+
+		EXPECT_EQ(minimum_cost_flow_found, std::get<2>(testcase));
+		if(minimum_cost_flow_found)
+			EXPECT_EQ(minimum_cost_flow, std::get<1>(testcase));
+	}
+}
+
 TEST(graph_algorithm, successive_shortest_path_on_residual_kostenminimal3)
 {
 	using namespace graph;
 
-	graph::graph gg;
-	loader gl;
-	graph::algorithm ga;
-	bool minimum_cost_flow_found = false;
-	double minimum_cost_flow = 0.0;
+	std::vector<std::tuple<files, double, bool>> testcases = {
+		std::make_tuple(files::Kostenminimal3, 1537, true)
+	};
 
-	gl.load(files::Kostenminimal3, gg);
-	ga.successive_shortest_path_on_residual(
-		&gg, &minimum_cost_flow_found, &minimum_cost_flow);
+	for(const std::tuple<files, double, bool> testcase : testcases)
+	{
+		graph::graph gg;
+		loader gl;
+		algorithm ga;
 
-	EXPECT_TRUE(minimum_cost_flow_found);
-	EXPECT_EQ(minimum_cost_flow, 1537);
+		bool minimum_cost_flow_found = false;
+		double minimum_cost_flow = 0.0;
+
+		gl.load(std::get<0>(testcase), gg);
+
+		ga.successive_shortest_path_on_residual(
+			&gg, &minimum_cost_flow_found, &minimum_cost_flow);
+
+		EXPECT_EQ(minimum_cost_flow_found, std::get<2>(testcase));
+		if(minimum_cost_flow_found)
+			EXPECT_EQ(minimum_cost_flow, std::get<1>(testcase));
+	}
 }
 
 TEST(graph_kostenminimal, check_parallel_egdes)

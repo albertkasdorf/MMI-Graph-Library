@@ -585,12 +585,21 @@ void algorithm::try_all_routes_recursive(
 void algorithm::dijkstra(
 	const graph* full_graph,
 	const vertex* start_vertex,
-	graph* shortest_path_graph,
-	std::map<const vertex*, double>* distances,		// Distances from the start_vertex to the other vertices.
+	std::unordered_map<std::uint32_t, const edge*>* predecessor,
+	std::unordered_map<std::uint32_t, double>* distances,
 	bool* negative_weights_found)
 {
-	// Edge from the predecessor vertex. (target == vertex)
-	std::map<const vertex*, const edge*> predecessor;
+	std::unordered_map<std::uint32_t, const edge*> _predecessor;
+	std::unordered_map<std::uint32_t, double> _distances;
+	bool _negative_weights_found = false;
+
+	if(!predecessor)
+		predecessor = &_predecessor;
+	if(!distances)
+		distances = &_distances;
+	if(!negative_weights_found)
+		negative_weights_found = &_negative_weights_found;
+
 	std::deque<const vertex*> unprocessed_vertices;
 
 	const vertex* current_vertex = nullptr;
@@ -609,11 +618,8 @@ void algorithm::dijkstra(
 			initial_distance = 0.0;
 		}
 
-		distances->insert(
-			std::make_pair(vertex, initial_distance));
-
-		predecessor.insert(
-			std::make_pair(vertex, nullptr));
+		distances->insert(std::make_pair(vertex->get_id(), initial_distance));
+		predecessor->insert(std::make_pair(vertex->get_id(), nullptr));
 
 		unprocessed_vertices.insert(
 			std::end(unprocessed_vertices), vertex);
@@ -621,7 +627,7 @@ void algorithm::dijkstra(
 
 	// start algorithm with the start_vertex
 	current_vertex = full_graph->get_vertex(start_vertex->get_id());
-	current_vertex_distance = (*distances)[current_vertex];
+	current_vertex_distance = (*distances)[current_vertex->get_id()];
 
 	while(true)
 	{
@@ -638,7 +644,7 @@ void algorithm::dijkstra(
 			const vertex* target_vertex = explore_edge->get_target();
 
 			// What is my current distance from start_vertex to target_vertex
-			const double target_vertex_distance = (*distances)[target_vertex];
+			const double target_vertex_distance = (*distances)[target_vertex->get_id()];
 
 			const double new_distance =
 				current_vertex_distance + explore_edge->get_weight();
@@ -646,8 +652,8 @@ void algorithm::dijkstra(
 			// If the new route is better, update the data
 			if(new_distance < target_vertex_distance)
 			{
-				(*distances)[target_vertex] = new_distance;
-				predecessor[target_vertex] = explore_edge;
+				(*distances)[target_vertex->get_id()] = new_distance;
+				(*predecessor)[target_vertex->get_id()] = explore_edge;
 			}
 		}
 
@@ -667,7 +673,7 @@ void algorithm::dijkstra(
 		current_vertex_distance = std::numeric_limits<double>::infinity();
 		for(auto next_vertex : unprocessed_vertices)
 		{
-			const double next_vertex_distance = (*distances)[next_vertex];
+			const double next_vertex_distance = (*distances)[next_vertex->get_id()];
 
 			if(next_vertex_distance <= current_vertex_distance)
 			{
@@ -677,117 +683,18 @@ void algorithm::dijkstra(
 		}
 	}
 
-	// Build shortest path graph
-	for(auto kvp : predecessor)
-	{
-		// The start_vertex has no predecessor
-		if(kvp.second == nullptr)
-			continue;
-
-		shortest_path_graph->add_directed_edge(
-			kvp.second->get_source()->get_id(),
-			kvp.second->get_target()->get_id(),
-			kvp.second->get_weight());
-	}
-
-	return;
-}
-
-//
-// Moore-Bellman-Ford-Algorithm
-//
-void algorithm::moore_bellman_ford(
-	const graph* full_graph,
-	const vertex* start_vertex,
-	graph* shortest_path_graph,
-	std::map<const vertex*, double>* distances,
-	bool* negative_cycle_found)
-{
-	// Edge from the predecessor vertex. (target == vertex)
-	std::map<const vertex*, const edge*> predecessor;
-
-
-	// Initialize distances and predecessor
-	for(auto vertex : full_graph->get_vertices())
-	{
-		double initial_distance = std::numeric_limits<double>::infinity();
-
-		if(vertex->get_id() == start_vertex->get_id())
-		{
-			initial_distance = 0.0;
-		}
-
-		distances->insert(
-			std::make_pair(vertex, initial_distance));
-
-		predecessor.insert(
-			std::make_pair(vertex, nullptr));
-	}
-
-	// Compute the distances and the predecessor
-	for(std::uint32_t i = 0; i < full_graph->get_vertex_count() - 1; ++i)
-	{
-		for(auto edge : full_graph->get_edges())
-		{
-			const vertex* source_vertex = edge->get_source();
-			const vertex* target_vertex = edge->get_target();
-
-			const double source_distance = (*distances)[source_vertex];
-			const double target_distance = (*distances)[target_vertex];
-
-			const double new_distance = source_distance + edge->get_weight();
-
-			if(new_distance < target_distance)
-			{
-				(*distances)[target_vertex] = new_distance;
-				predecessor[target_vertex] = edge;
-			}
-		}
-	}
-
-	// Detect the negative cycle.
-	for(auto edge : full_graph->get_edges())
-	{
-		const vertex* source_vertex = edge->get_source();
-		const vertex* target_vertex = edge->get_target();
-
-		const double source_distance = (*distances)[source_vertex];
-		const double target_distance = (*distances)[target_vertex];
-
-		const double new_distance = source_distance + edge->get_weight();
-
-		if(new_distance < target_distance)
-		{
-			*negative_cycle_found = true;
-			break;
-		}
-	}
-
-	// Build shortest path graph
-	for(auto kvp : predecessor)
-	{
-		// The start_vertex has no predecessor
-		if(kvp.second == nullptr)
-			continue;
-
-		shortest_path_graph->add_directed_edge(
-			kvp.second->get_source()->get_id(),
-			kvp.second->get_target()->get_id(),
-			kvp.second->get_weight());
-	}
-
 	return;
 }
 
 void algorithm::moore_bellman_ford(
 	const graph* g,
 	const vertex* start_vertex,
-	std::map<const vertex*, const edge*, compare_vertex_id>* predecessor,
-	std::map<const vertex*, double>* distances,
+	std::unordered_map<std::uint32_t, const edge*>* predecessor,
+	std::unordered_map<std::uint32_t, double>* distances,
 	bool* negative_cycle_found)
 {
-	std::map<const vertex*, const edge*, compare_vertex_id> _predecessor;
-	std::map<const vertex*, double> _distances;
+	std::unordered_map<std::uint32_t, const edge*> _predecessor;
+	std::unordered_map<std::uint32_t, double> _distances;
 	bool _negative_cycle_found = false;
 
 	if(!predecessor)
@@ -808,8 +715,8 @@ void algorithm::moore_bellman_ford(
 			initial_distance = 0.0;
 		}
 
-		distances->insert(std::make_pair(vertex, initial_distance));
-		predecessor->insert(std::make_pair(vertex, nullptr));
+		distances->insert(std::make_pair(vertex->get_id(), initial_distance));
+		predecessor->insert(std::make_pair(vertex->get_id(), nullptr));
 	}
 
 	// Compute the distances and the predecessor
@@ -820,8 +727,8 @@ void algorithm::moore_bellman_ford(
 			const vertex* source_vertex = e->get_source();
 			const vertex* target_vertex = e->get_target();
 
-			const double source_distance = (*distances)[source_vertex];
-			const double target_distance = (*distances)[target_vertex];
+			const double source_distance = (*distances)[source_vertex->get_id()];
+			const double target_distance = (*distances)[target_vertex->get_id()];
 
 			double cost = 0.0;
 
@@ -837,8 +744,8 @@ void algorithm::moore_bellman_ford(
 
 			if(new_distance < target_distance)
 			{
-				(*distances)[target_vertex] = new_distance;
-				(*predecessor)[target_vertex] = e;
+				(*distances)[target_vertex->get_id()] = new_distance;
+				(*predecessor)[target_vertex->get_id()] = e;
 			}
 		}
 	}
@@ -849,8 +756,8 @@ void algorithm::moore_bellman_ford(
 		const vertex* source_vertex = e->get_source();
 		const vertex* target_vertex = e->get_target();
 
-		const double source_distance = (*distances)[source_vertex];
-		const double target_distance = (*distances)[target_vertex];
+		const double source_distance = (*distances)[source_vertex->get_id()];
+		const double target_distance = (*distances)[target_vertex->get_id()];
 
 		double cost = 0.0;
 
@@ -1047,7 +954,7 @@ void algorithm::cycle_cancelling(
 	bool* minimum_cost_flow_found,
 	double* minimum_cost_flow)
 {
-	const bool show_viz = true;
+	const bool show_viz = false;
 
 	std::unordered_map<
 		const edge*,
@@ -1259,6 +1166,15 @@ void algorithm::create_residual_graph(
 				assert(false);
 		// f(e)
 		const double edge_value = flow_per_edge->at(e);
+		// c(e)
+		double edge_cost = 0.0;
+		if(e->has_cost())
+			edge_cost = e->get_cost();
+		else
+			if(e->has_weight())
+				edge_cost = e->get_weight();
+			else
+				assert(false);
 
 		// residual_capacity
 		// Forward: u^f(e) = u(e) - f(e)
@@ -1271,7 +1187,7 @@ void algorithm::create_residual_graph(
 			std::shared_ptr<edge> forward_edge = e->create_copy();
 
 			forward_edge->set_capacity(uf_forward_edge);
-			forward_edge->set_cost(e->get_cost());
+			forward_edge->set_cost(edge_cost);
 			forward_edge->set_source(residual_graph->get_vertex(source_id));
 			forward_edge->set_target(residual_graph->get_vertex(target_id));
 
@@ -1284,7 +1200,7 @@ void algorithm::create_residual_graph(
 			std::shared_ptr<edge> backward_edge = e->create_copy();
 
 			backward_edge->set_capacity(uf_backward_edge);
-			backward_edge->set_cost(-e->get_cost());
+			backward_edge->set_cost(-edge_cost);
 			backward_edge->set_source(residual_graph->get_vertex(target_id));
 			backward_edge->set_target(residual_graph->get_vertex(source_id));
 
@@ -1487,25 +1403,25 @@ void algorithm::successive_shortest_path(
 		// Searching for a (s,t)-path.
 		for(const vertex* source : pseudo_source)
 		{
-			std::map<const vertex*, const edge*, compare_vertex_id> predecessor;
-			std::map<const vertex*, double> distances;
+			std::unordered_map<std::uint32_t, const edge*> predecessor;
+			std::unordered_map<std::uint32_t, double> distances;
 
 			moore_bellman_ford(
 				&residual_graph, source, &predecessor, &distances, nullptr);
 
 			for(const vertex* target : pseudo_target)
 			{
-				if(distances[target] == std::numeric_limits<double>::infinity())
+				if(distances[target->get_id()] == std::numeric_limits<double>::infinity())
 					continue;
 
 				std::list<const edge*> path;
 				const edge* e_to_pred = nullptr;
 
-				e_to_pred = predecessor[target];
+				e_to_pred = predecessor[target->get_id()];
 				while(e_to_pred != nullptr)
 				{
 					path.push_front(e_to_pred);
-					e_to_pred = predecessor[e_to_pred->get_source()];
+					e_to_pred = predecessor[e_to_pred->get_source()->get_id()];
 				}
 
 				// There exist no path
@@ -1670,16 +1586,8 @@ void algorithm::successive_shortest_path_on_residual(
 		{
 			std::unordered_map<std::uint32_t, const edge*> predecessor;
 			std::unordered_map<std::uint32_t, double> distances;
-			{
-				std::map<const vertex*, const edge*, compare_vertex_id> _predecessor;
-				std::map<const vertex*, double> _distances;
 
-				moore_bellman_ford(&gres, gres.get_vertex(psrc), &_predecessor, &_distances, nullptr);
-				for(auto kvp : _predecessor)
-					predecessor[kvp.first->get_id()] = kvp.second;
-				for(auto kvp : _distances)
-					distances[kvp.first->get_id()] = kvp.second;
-			}
+			moore_bellman_ford(&gres, gres.get_vertex(psrc), &predecessor, &distances, nullptr);
 
 			for(const std::uint32_t ptgt : pseudo_target)
 			{
