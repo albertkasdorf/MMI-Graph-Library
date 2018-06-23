@@ -1,12 +1,19 @@
 language:
   - cpp
+
 compiler:
   - clang
   - gcc
+
 #addons:
 #  apt:
 #    sources:
 #      - ubuntu-toolchain-r-test
+
+#
+# build problem with travis CI #955
+# https://github.com/nanomsg/nanomsg/issues/955
+#
 install:
   - sudo apt-get install libgtest-dev
   - cd /usr/src/gtest
@@ -14,6 +21,8 @@ install:
   - sudo make
   - sudo mv libgtest* /usr/lib/
   - cd "${TRAVIS_BUILD_DIR}"
+
 script:
   - cmake -G "Unix Makefiles" .
   - make
+  - ls -Rla
