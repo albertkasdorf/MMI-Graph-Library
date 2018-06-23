@@ -17,16 +17,14 @@ TEST(always_true, expect_true)
 
 TEST(graph_algorithm, moore_bellman_ford)
 {
-	using namespace graph;
-
 	graph::graph gg;
-	algorithm ga;
-	std::unordered_map<std::uint32_t, const edge*> predecessor;
+	graph::algorithm ga;
+	std::unordered_map<std::uint32_t, const graph::edge*> predecessor;
 	std::unordered_map<std::uint32_t, double> distances;
 
-	const vertex* v0 = gg.add_vertex(nullptr, nullptr);
-	const vertex* v1 = gg.add_vertex(nullptr, nullptr);
-	const vertex* v2 = gg.add_vertex(nullptr, nullptr);
+	const graph::vertex* v0 = gg.add_vertex(nullptr, nullptr);
+	const graph::vertex* v1 = gg.add_vertex(nullptr, nullptr);
+	const graph::vertex* v2 = gg.add_vertex(nullptr, nullptr);
 
 	gg.add_directed_edge(0, 1, -5.0, 0.0);
 	gg.add_directed_edge(0, 2, -2.0, 0.0);
@@ -47,18 +45,16 @@ TEST(graph_algorithm, moore_bellman_ford)
 
 TEST(graph_algorithm, moore_bellman_ford_from_slides)
 {
-	using namespace graph;
-
-	::graph::graph gg;
-	algorithm ga;
-	std::unordered_map<std::uint32_t, const edge*> predecessor;
+	graph::graph gg;
+	graph::algorithm ga;
+	std::unordered_map<std::uint32_t, const graph::edge*> predecessor;
 	std::unordered_map<std::uint32_t, double> distances;
 
-	const vertex* s = gg.add_vertex(nullptr, nullptr);
-	const vertex* a = gg.add_vertex(nullptr, nullptr);
-	const vertex* b = gg.add_vertex(nullptr, nullptr);
-	const vertex* c = gg.add_vertex(nullptr, nullptr);
-	const vertex* d = gg.add_vertex(nullptr, nullptr);
+	const graph::vertex* s = gg.add_vertex(nullptr, nullptr);
+	const graph::vertex* a = gg.add_vertex(nullptr, nullptr);
+	const graph::vertex* b = gg.add_vertex(nullptr, nullptr);
+	const graph::vertex* c = gg.add_vertex(nullptr, nullptr);
+	const graph::vertex* d = gg.add_vertex(nullptr, nullptr);
 
 	gg.add_directed_edge(s->get_id(), a->get_id(), 7.0, 0.0);
 	gg.add_directed_edge(s->get_id(), b->get_id(), 3.0, 0.0);
@@ -235,16 +231,14 @@ TEST(graph_vertex, std_map_test)
 
 TEST(graph_edge, std_unordered_map_test)
 {
-	using namespace graph;
-
-	edge e0, e1, e2, e3;
-	vertex v0(0), v1(1), v2(2);
+	graph::edge e0, e1, e2, e3;
+	graph::vertex v0(0), v1(1), v2(2);
 
 	std::unordered_map<
-		const edge*,
+		const graph::edge*,
 		double,
-		undirected_edge_hash,
-		undirected_edge_equal> undirected_mapping;
+		graph::undirected_edge_hash,
+		graph::undirected_edge_equal> undirected_mapping;
 
 	e0.set_source(&v0);
 	e0.set_target(&v1);
@@ -266,12 +260,10 @@ TEST(graph_edge, std_unordered_map_test)
 
 TEST(graph_graph, return_edges)
 {
-	using namespace graph;
-
-	::graph::graph g;
-	edge e0, e1;
-	const edge* e00, *e11;
-	vertex v0(0), v1(1);
+	graph::graph g;
+	graph::edge e0, e1;
+	const graph::edge* e00, *e11;
+	graph::vertex v0(0), v1(1);
 
 	g.add_directed_edge(0, 1, 0.0, 0.0);
 
@@ -361,12 +353,10 @@ TEST(graph_algorithm_successive_shortest_path, compute_b_prime)
 
 TEST(graph_algorithm_successive_shortest_path, generate_pseudo_source_target)
 {
-	using namespace graph;
-
 	graph::graph gg;
-	algorithm ga;
-	const vertex* v0, *v1, *v2, *v3;
-	std::vector<const vertex*> pseudo_sources, pesudo_targets;
+	graph::algorithm ga;
+	const graph::vertex* v0, *v1, *v2, *v3;
+	std::vector<const graph::vertex*> pseudo_sources, pesudo_targets;
 	std::map<const graph::vertex*, double, graph::compare_vertex_id> b_prime;
 
 	v0 = gg.add_vertex(0, +7.0);
@@ -384,7 +374,7 @@ TEST(graph_algorithm_successive_shortest_path, generate_pseudo_source_target)
 	EXPECT_EQ(pseudo_sources.size(), 2);
 	EXPECT_EQ(pesudo_targets.size(), 1);
 
-	for(const vertex* v : pseudo_sources)
+	for(const graph::vertex* v : pseudo_sources)
 	{
 		if(v->get_id() == v1->get_id())
 		{
@@ -402,7 +392,7 @@ TEST(graph_algorithm_successive_shortest_path, generate_pseudo_source_target)
 		}
 	}
 
-	for(const vertex* v : pesudo_targets)
+	for(const graph::vertex* v : pesudo_targets)
 	{
 		if(v->get_id() == v3->get_id())
 		{
@@ -418,15 +408,13 @@ TEST(graph_algorithm_successive_shortest_path, generate_pseudo_source_target)
 
 TEST(graph_algorithm, successive_shortest_path_kostenminimal1)
 {
-	using namespace graph;
-
 	graph::graph gg;
-	loader gl;
+	graph::loader gl;
 	graph::algorithm ga;
 	bool minimum_cost_flow_found = false;
 	double minimum_cost_flow = 0.0;
 
-	gl.load(files::Kostenminimal1, gg);
+	gl.load(graph::files::Kostenminimal1, gg);
 	ga.successive_shortest_path(
 		&gg, &minimum_cost_flow_found, &minimum_cost_flow);
 
@@ -436,15 +424,13 @@ TEST(graph_algorithm, successive_shortest_path_kostenminimal1)
 
 TEST(graph_algorithm, successive_shortest_path_kostenminimal2)
 {
-	using namespace graph;
-
 	graph::graph gg;
-	loader gl;
+	graph::loader gl;
 	graph::algorithm ga;
 	bool minimum_cost_flow_found = false;
 	double minimum_cost_flow = 0.0;
 
-	gl.load(files::Kostenminimal2, gg);
+	gl.load(graph::files::Kostenminimal2, gg);
 	ga.successive_shortest_path(
 		&gg, &minimum_cost_flow_found, &minimum_cost_flow);
 
@@ -453,15 +439,13 @@ TEST(graph_algorithm, successive_shortest_path_kostenminimal2)
 
 TEST(DISABLED_graph_algorithm, successive_shortest_path_kostenminimal3)
 {
-	using namespace graph;
-
 	graph::graph gg;
-	loader gl;
+	graph::loader gl;
 	graph::algorithm ga;
 	bool minimum_cost_flow_found = false;
 	double minimum_cost_flow = 0.0;
 
-	gl.load(files::Kostenminimal3, gg);
+	gl.load(graph::files::Kostenminimal3, gg);
 	ga.successive_shortest_path(
 		&gg, &minimum_cost_flow_found, &minimum_cost_flow);
 
@@ -471,15 +455,13 @@ TEST(DISABLED_graph_algorithm, successive_shortest_path_kostenminimal3)
 
 TEST(graph_algorithm, successive_shortest_path_kostenminimal4)
 {
-	using namespace graph;
-
 	graph::graph gg;
-	loader gl;
+	graph::loader gl;
 	graph::algorithm ga;
 	bool minimum_cost_flow_found = false;
 	double minimum_cost_flow = 0.0;
 
-	gl.load(files::Kostenminimal4, gg);
+	gl.load(graph::files::Kostenminimal4, gg);
 	ga.successive_shortest_path(
 		&gg, &minimum_cost_flow_found, &minimum_cost_flow);
 
@@ -489,15 +471,13 @@ TEST(graph_algorithm, successive_shortest_path_kostenminimal4)
 
 TEST(graph_algorithm, successive_shortest_path_kostenminimal6)
 {
-	using namespace graph;
-
 	graph::graph gg;
-	loader gl;
+	graph::loader gl;
 	graph::algorithm ga;
 	bool minimum_cost_flow_found = false;
 	double minimum_cost_flow = 0.0;
 
-	gl.load(files::Kostenminimal6, gg);
+	gl.load(graph::files::Kostenminimal6, gg);
 	ga.successive_shortest_path(
 		&gg, &minimum_cost_flow_found, &minimum_cost_flow);
 
@@ -507,20 +487,18 @@ TEST(graph_algorithm, successive_shortest_path_kostenminimal6)
 
 TEST(graph_algorithm, successive_shortest_path_on_residual_kostenminimal)
 {
-	using namespace graph;
-
-	std::vector<std::tuple<files, double, bool>> testcases = {
-		std::make_tuple(files::Kostenminimal1, 3.0, true),
-		std::make_tuple(files::Kostenminimal2, 0.0, false),
-		std::make_tuple(files::Kostenminimal4, 0.0, true),
-		std::make_tuple(files::Kostenminimal6, 16.0, true),
+	std::vector<std::tuple<graph::files, double, bool>> testcases = {
+		std::make_tuple(graph::files::Kostenminimal1, 3.0, true),
+		std::make_tuple(graph::files::Kostenminimal2, 0.0, false),
+		std::make_tuple(graph::files::Kostenminimal4, 0.0, true),
+		std::make_tuple(graph::files::Kostenminimal6, 16.0, true),
 	};
 
-	for(const std::tuple<files, double, bool> testcase : testcases)
+	for(const std::tuple<graph::files, double, bool> testcase : testcases)
 	{
 		graph::graph gg;
-		loader gl;
-		algorithm ga;
+		graph::loader gl;
+		graph::algorithm ga;
 
 		bool minimum_cost_flow_found = false;
 		double minimum_cost_flow = 0.0;
@@ -538,17 +516,15 @@ TEST(graph_algorithm, successive_shortest_path_on_residual_kostenminimal)
 
 TEST(graph_algorithm, successive_shortest_path_on_residual_kostenminimal3)
 {
-	using namespace graph;
-
-	std::vector<std::tuple<files, double, bool>> testcases = {
-		std::make_tuple(files::Kostenminimal3, 1537, true)
+	std::vector<std::tuple<graph::files, double, bool>> testcases = {
+		std::make_tuple(graph::files::Kostenminimal3, 1537, true)
 	};
 
-	for(const std::tuple<files, double, bool> testcase : testcases)
+	for(const std::tuple<graph::files, double, bool> testcase : testcases)
 	{
 		graph::graph gg;
-		loader gl;
-		algorithm ga;
+		graph::loader gl;
+		graph::algorithm ga;
 
 		bool minimum_cost_flow_found = false;
 		double minimum_cost_flow = 0.0;
@@ -566,28 +542,26 @@ TEST(graph_algorithm, successive_shortest_path_on_residual_kostenminimal3)
 
 TEST(graph_kostenminimal, check_parallel_egdes)
 {
-	using namespace graph;
-
-	std::vector<files> gfiles = {
-		files::Kostenminimal1,
-		files::Kostenminimal2,
-		files::Kostenminimal3,
-		files::Kostenminimal4,
-		files::Kostenminimal6
+	std::vector<graph::files> gfiles = {
+		graph::files::Kostenminimal1,
+		graph::files::Kostenminimal2,
+		graph::files::Kostenminimal3,
+		graph::files::Kostenminimal4,
+		graph::files::Kostenminimal6
 	};
 
-	for(const files file : gfiles)
+	for(const graph::files file : gfiles)
 	{
 		graph::graph gg;
-		loader gl;
+		graph::loader gl;
 
 		gl.load(file, gg);
 
-		for(const vertex* v : gg.get_vertices())
+		for(const graph::vertex* v : gg.get_vertices())
 		{
 			std::set<std::uint32_t> lookup;
 
-			for(const edge* eofv : v->get_edges())
+			for(const graph::edge* eofv : v->get_edges())
 			{
 				const std::uint32_t target_id = eofv->get_target()->get_id();
 
@@ -600,31 +574,29 @@ TEST(graph_kostenminimal, check_parallel_egdes)
 
 TEST(graph_kostenminimal, check_antiparallel_egdes)
 {
-	using namespace graph;
-
-	std::vector<files> gfiles = {
-		files::Kostenminimal1,
-		files::Kostenminimal2,
-		files::Kostenminimal3,
-		files::Kostenminimal4,
-		files::Kostenminimal6
+	std::vector<graph::files> gfiles = {
+		graph::files::Kostenminimal1,
+		graph::files::Kostenminimal2,
+		graph::files::Kostenminimal3,
+		graph::files::Kostenminimal4,
+		graph::files::Kostenminimal6
 	};
 
-	for(const files file : gfiles)
+	for(const graph::files file : gfiles)
 	{
 		graph::graph gg;
-		loader gl;
+		graph::loader gl;
 
 		gl.load(file, gg);
 
-		for(const vertex* v : gg.get_vertices())
+		for(const graph::vertex* v : gg.get_vertices())
 		{
-			for(const edge* eOfv : v->get_edges())
+			for(const graph::edge* eOfv : v->get_edges())
 			{
-				const vertex* target = eOfv->get_target();
+				const graph::vertex* target = eOfv->get_target();
 				EXPECT_NE(v->get_id(), target->get_id());
 
-				for(const edge* e_of_target : target->get_edges())
+				for(const graph::edge* e_of_target : target->get_edges())
 				{
 					EXPECT_NE(v->get_id(), e_of_target->get_target()->get_id());
 				}
@@ -635,16 +607,14 @@ TEST(graph_kostenminimal, check_antiparallel_egdes)
 
 TEST(graph_algorithm, create_residual_graph)
 {
-	using namespace graph;
-
 	graph::graph gg, ggres;
-	algorithm ga;
-	const edge* e01, *e12, *e13;
+	graph::algorithm ga;
+	const graph::edge* e01, *e12, *e13;
 	std::unordered_map<
-		const edge*,
+		const graph::edge*,
 		double,
-		undirected_edge_hash,
-		undirected_edge_equal> flow_per_edge;
+		graph::undirected_edge_hash,
+		graph::undirected_edge_equal> flow_per_edge;
 
 	gg.add_directed_edge(0, 1, 7, 5);
 	gg.add_directed_edge(1, 2, 2, 2);
@@ -662,7 +632,7 @@ TEST(graph_algorithm, create_residual_graph)
 
 	EXPECT_EQ(ggres.get_edge_count(), 4);
 
-	for(const edge* e : ggres.get_edges())
+	for(const graph::edge* e : ggres.get_edges())
 	{
 		if(e->get_source()->get_id() == 0 && e->get_target()->get_id() == 1)
 		{
@@ -690,26 +660,26 @@ TEST(graph_algorithm, create_residual_graph)
 		}
 	}
 
-	for(const edge* e : ggres.get_edges())
+	for(const graph::edge* e : ggres.get_edges())
 	{
 		if(e->get_source()->get_id() == 0 && e->get_target()->get_id() == 1)
 		{
-			const edge* ecmp = gg.get_edge(e, false);
+			const graph::edge* ecmp = gg.get_edge(e, false);
 			EXPECT_EQ(ecmp, e01);
 		}
 		else if(e->get_source()->get_id() == 2 && e->get_target()->get_id() == 1)
 		{
-			const edge* ecmp = gg.get_edge(e, false);
+			const graph::edge* ecmp = gg.get_edge(e, false);
 			EXPECT_EQ(ecmp, e12);
 		}
 		else if(e->get_source()->get_id() == 1 && e->get_target()->get_id() == 3)
 		{
-			const edge* ecmp = gg.get_edge(e, false);
+			const graph::edge* ecmp = gg.get_edge(e, false);
 			EXPECT_EQ(ecmp, e13);
 		}
 		else if(e->get_source()->get_id() == 3 && e->get_target()->get_id() == 1)
 		{
-			const edge* ecmp = gg.get_edge(e, false);
+			const graph::edge* ecmp = gg.get_edge(e, false);
 			EXPECT_EQ(ecmp, e13);
 		}
 		else
