@@ -928,7 +928,7 @@ void algorithm::edmonds_karp(
 
 
 		// Schritt 2: Bestimmen Sie G^f und u^f(e).
-		create_residual_graph(full_graph, flow_per_edge, &residual_graph, capacity_of_edge);
+		create_residual_graph(full_graph, flow_per_edge, &residual_graph);
 
 		// Schritt 3: Konstruieren Sie einen kürzesten (s,t)-Weg p
 		// bzgl. der Anzahl der Kanten in G^f.
@@ -977,64 +977,6 @@ void algorithm::edmonds_karp(
 	}
 
 	return;
-}
-
-void algorithm::create_residual_graph(
-	const graph* full_graph,
-	const std::unordered_map<
-		const edge*,
-		double,
-		undirected_edge_hash,
-		undirected_edge_equal>* flow_per_edge,
-	graph* residual_graph,
-	std::function<double(const edge*)> capacity_of_edge)
-{
-	for(auto v : full_graph->get_vertices())
-	{
-		std::shared_ptr<vertex> copy = v->create_copy();
-		residual_graph->add_vertex(copy.get());
-	}
-
-	for(auto e : full_graph->get_edges())
-	{
-		const std::uint32_t source_id = e->get_source()->get_id();
-		const std::uint32_t target_id = e->get_target()->get_id();
-
-		// u(e)
-		const double edge_capacity = capacity_of_edge(e);
-		// f(e)
-		const double edge_value = flow_per_edge->at(e);
-
-		// residual_capacity
-		// Forward: u^f(e) = u(e) - f(e)
-		const double uf_forward_edge = edge_capacity - edge_value;
-		// Backward: u^f(e) = f(e)
-		const double uf_backward_edge = edge_value;
-
-		if( uf_forward_edge > 0.0 )
-		{
-			std::shared_ptr<edge> forward_edge = e->create_copy();
-
-			forward_edge->set_capacity(uf_forward_edge);
-			forward_edge->set_source(residual_graph->get_vertex(source_id));
-			forward_edge->set_target(residual_graph->get_vertex(target_id));
-
-			// Insert forward edge
-			residual_graph->add_edge(forward_edge.get());
-		}
-
-		if(uf_backward_edge > 0.0)
-		{
-			std::shared_ptr<edge> backward_edge = e->create_copy();
-
-			backward_edge->set_capacity(uf_backward_edge);
-			backward_edge->set_source(residual_graph->get_vertex(target_id));
-			backward_edge->set_target(residual_graph->get_vertex(source_id));
-
-			// Insert backward edge
-			residual_graph->add_edge(backward_edge.get());
-		}
-	}
 }
 
 void algorithm::get_shortest_path(
@@ -1140,7 +1082,7 @@ void algorithm::cycle_cancelling(
 		// Residualkosten.
 		graph residual_graph;
 
-		cc_create_residual_graph(full_graph, &flow_per_edge, &residual_graph);
+		create_residual_graph(full_graph, &flow_per_edge, &residual_graph);
 
 		viz_graph(show_viz, "Residual", &residual_graph);
 
@@ -1290,8 +1232,8 @@ void algorithm::cc_compute_b_flow(
 	return;
 }
 
-void algorithm::cc_create_residual_graph(
-	const graph* full_graph,
+void algorithm::create_residual_graph(
+	const graph* g,
 	const std::unordered_map<
 		const edge*,
 		double,
@@ -1299,18 +1241,25 @@ void algorithm::cc_create_residual_graph(
 		undirected_edge_equal>* flow_per_edge,
 	graph* residual_graph)
 {
-	for(const vertex* v : full_graph->get_vertices())
+	for(const vertex* v : g->get_vertices())
 	{
 		residual_graph->add_vertex(v);
 	}
 
-	for(auto e : full_graph->get_edges())
+	for(const edge* e : g->get_edges())
 	{
 		const std::uint32_t source_id = e->get_source()->get_id();
 		const std::uint32_t target_id = e->get_target()->get_id();
 
 		// u(e)
-		const double edge_capacity = e->get_capacity();
+		double edge_capacity = 0.0;
+		if(e->has_capacity())
+			edge_capacity = e->get_capacity();
+		else
+			if(e->has_weight())
+				edge_capacity = e->get_weight();
+			else
+				assert(false);
 		// f(e)
 		const double edge_value = flow_per_edge->at(e);
 
@@ -1320,7 +1269,7 @@ void algorithm::cc_create_residual_graph(
 		// Backward: u^f(e) = f(e)
 		const double uf_backward_edge = edge_value;
 
-		if( uf_forward_edge > 0.0 )
+		if(uf_forward_edge > 0.0)
 		{
 			std::shared_ptr<edge> forward_edge = e->create_copy();
 
@@ -1338,7 +1287,7 @@ void algorithm::cc_create_residual_graph(
 			std::shared_ptr<edge> backward_edge = e->create_copy();
 
 			backward_edge->set_capacity(uf_backward_edge);
-			backward_edge->set_cost(e->get_cost() * -1.0);
+			backward_edge->set_cost(-e->get_cost());
 			backward_edge->set_source(residual_graph->get_vertex(target_id));
 			backward_edge->set_target(residual_graph->get_vertex(source_id));
 
@@ -1483,11 +1432,11 @@ void algorithm::successive_shortest_path(
 	{
 		double flow = 0.0;
 
-		if(e->get_cost() < 0)
+		if(e->get_cost() < 0.0)
 			flow = e->get_capacity();
 
 		flow_per_edge.insert(std::make_pair(e, flow));
-		assert(flow_per_edge[e] >= 0);
+		assert(flow_per_edge[e] >= 0.0);
 	}
 
 	viz_flow(show_viz, &flow_per_edge);
@@ -1500,32 +1449,13 @@ void algorithm::successive_shortest_path(
 		std::vector<const vertex*> pseudo_source, pseudo_target;
 		std::map<const vertex*, double, compare_vertex_id> b_prime;
 
-		// b(v)
-		std::function<double(const vertex*)> fn_b = [](const vertex* v) {
-			return v->get_balance();
-		};
-		// b'(v)
-		std::function<double(const vertex*)> fn_b_prime = [&b_prime](const vertex* v) {
-			assert(b_prime.count(v) > 0);
-			return b_prime[v];
-		};
 
 		// Compute values for b_prime
 		compute_b_prime(full_graph, &flow_per_edge, &b_prime);
 
 		// Create two lists of pseudo_source(s) and pseudo_target(s)
-		for(const vertex* v : full_graph->get_vertices())
-		{
-			// s: b(s) - b'(s) > 0
-			// t: b(t) - b'(t) < 0
-			// n: b(t) - b'(t) = 0
-
-			if(fn_b(v) > fn_b_prime(v))
-				pseudo_source.push_back(v);
-
-			if(fn_b(v) < fn_b_prime(v))
-				pseudo_target.push_back(v);
-		}
+		generate_pseudo_source_target(
+			full_graph, &b_prime, &pseudo_source, &pseudo_target);
 
 		viz_pseudo_source_target(show_viz, &pseudo_source, &pseudo_target);
 
@@ -1549,7 +1479,7 @@ void algorithm::successive_shortest_path(
 		// bzgl. c^f berechnen, sonst zu Schritt 6 gehen
 		graph residual_graph;
 
-		cc_create_residual_graph(full_graph, &flow_per_edge, &residual_graph);
+		create_residual_graph(full_graph, &flow_per_edge, &residual_graph);
 
 		viz_graph(show_viz, "Residual", &residual_graph);
 
@@ -1561,12 +1491,16 @@ void algorithm::successive_shortest_path(
 		for(const vertex* source : pseudo_source)
 		{
 			std::map<const vertex*, const edge*, compare_vertex_id> predecessor;
+			std::map<const vertex*, double> distances;
 
 			moore_bellman_ford(
-				&residual_graph, source, &predecessor, nullptr, nullptr);
+				&residual_graph, source, &predecessor, &distances, nullptr);
 
 			for(const vertex* target : pseudo_target)
 			{
+				if(distances[target] == std::numeric_limits<double>::infinity())
+					continue;
+
 				std::list<const edge*> path;
 				const edge* e_to_pred = nullptr;
 
@@ -1634,7 +1568,9 @@ void algorithm::successive_shortest_path(
 		for(std::pair<const edge*, bool> kvp : path_of_change)
 		{
 			const double sign = (kvp.second) ? 1.0 : -1.0;
-			flow_per_edge[kvp.first] += (gamma * sign);
+			const double flow = flow_per_edge[kvp.first];
+
+			flow_per_edge[kvp.first] = flow + (gamma * sign);
 
 			assert(flow_per_edge[kvp.first] >= 0.0);
 		}
@@ -1660,6 +1596,31 @@ void algorithm::successive_shortest_path(
 	}
 
 	return;
+}
+
+void successive_shortest_path_on_residual(
+	const graph* g, bool* minimum_cost_flow_found, double* minimum_cost_flow)
+{
+
+}
+
+void algorithm::generate_pseudo_source_target(
+	const graph* g,
+	std::map<const vertex*,double,compare_vertex_id>* b_prime,
+	std::vector<const vertex*>* pseudo_sources,
+	std::vector<const vertex*>* pesudo_targets)
+{
+	// s: b(s) - b'(s) > 0
+	// t: b(t) - b'(t) < 0
+	// n: b(t) - b'(t) = 0
+	for(const vertex* v : g->get_vertices())
+	{
+		if(v->get_balance() > (*b_prime)[v])
+			pseudo_sources->push_back(v);
+
+		if(v->get_balance() < (*b_prime)[v])
+			pesudo_targets->push_back(v);
+	}
 }
 
 void algorithm::compute_b_prime(

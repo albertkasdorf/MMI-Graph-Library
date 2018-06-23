@@ -70,7 +70,7 @@ const vertex* graph::add_vertex(const uint32_t id)
 	return vertices[hash].get();
 }
 
-void graph::add_vertex(const uint32_t id, const double balance)
+const vertex* graph::add_vertex(const uint32_t id, const double balance)
 {
 	const std::size_t hash = vertex::create_hash(id);
 	const bool vertex_not_found = vertices.count(hash) == 0;
@@ -81,6 +81,7 @@ void graph::add_vertex(const uint32_t id, const double balance)
 
 		vertices[hash] = v;
 	}
+	return vertices[hash].get();
 }
 
 const vertex* graph::add_vertex(const uint32_t* id, const double* balance)

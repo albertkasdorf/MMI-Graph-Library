@@ -33,7 +33,7 @@ public:
 	//
 	// Add a balanced vertex to the graph.
 	//
-	void add_vertex(const uint32_t, const double);
+	const vertex* add_vertex(const uint32_t, const double);
 
 	//
 	//
