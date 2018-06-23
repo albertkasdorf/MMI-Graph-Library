@@ -10,7 +10,7 @@ addons:
 install:
   - sudo apt-get install libgtest-dev
   - cd /usr/src/gtest
-  - sudo cmake .
+  - sudo env "PATH=$PATH" cmake .
   - sudo make
   - sudo mv libgtest* /usr/lib/
   - cd "${TRAVIS_BUILD_DIR}"
