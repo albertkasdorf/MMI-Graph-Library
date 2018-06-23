@@ -3,13 +3,13 @@ compiler:
   - clang
   - gcc
 install:
-  - pwd
   - sudo apt-get install libgtest-dev
+script:
   - cd /usr/src/gtest
+  - ls -al
   - sudo cmake CMakeLists.txt
   - sudo make
   - sudo cp *.a /usr/lib
   - cd -
-script:
   - cmake -G "Unix Makefiles" .
   - make
