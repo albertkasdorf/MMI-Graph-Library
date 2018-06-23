@@ -64,7 +64,7 @@ public:
 	//
 	// Remove an edge from this vertex.
 	//
-	void remove_edge(const edge*);
+	void remove_edge(const edge* e);
 
 	//
 	// Remove a directed edge that points to this vertex.

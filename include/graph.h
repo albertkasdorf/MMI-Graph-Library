@@ -96,6 +96,9 @@ public:
 	//
 	void remove_edge(const edge&);
 
+
+	void remove_edges(const vertex* source, const vertex* target);
+
 	//
 	// Return a copy of the vertex with the provided vertex id.
 	//

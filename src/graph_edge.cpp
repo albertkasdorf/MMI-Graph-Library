@@ -74,12 +74,12 @@ void edge::set_weight(const double value)
 	_weight.reset(new double(value));
 }
 
-bool edge::has_cost(void) const
+inline bool edge::has_cost(void) const
 {
 	return _cost != nullptr;
 }
 
-double edge::get_cost(void) const
+inline double edge::get_cost(void) const
 {
 	assert(has_cost());
 	return *_cost;

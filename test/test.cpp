@@ -504,6 +504,93 @@ TEST(graph_algorithm, successive_shortest_path_kostenminimal6)
 	EXPECT_EQ(minimum_cost_flow, 16.0);
 }
 
+TEST(graph_algorithm, successive_shortest_path_on_residual_kostenminimal3)
+{
+	using namespace graph;
+
+	graph::graph gg;
+	loader gl;
+	graph::algorithm ga;
+	bool minimum_cost_flow_found = false;
+	double minimum_cost_flow = 0.0;
+
+	gl.load(files::Kostenminimal3, gg);
+	ga.successive_shortest_path_on_residual(
+		&gg, &minimum_cost_flow_found, &minimum_cost_flow);
+
+	EXPECT_TRUE(minimum_cost_flow_found);
+	EXPECT_EQ(minimum_cost_flow, 1537);
+}
+
+TEST(graph_kostenminimal, check_parallel_egdes)
+{
+	using namespace graph;
+
+	std::vector<files> gfiles = {
+		files::Kostenminimal1,
+		files::Kostenminimal2,
+		files::Kostenminimal3,
+		files::Kostenminimal4,
+		files::Kostenminimal6
+	};
+
+	for(const files file : gfiles)
+	{
+		graph::graph gg;
+		loader gl;
+
+		gl.load(file, gg);
+
+		for(const vertex* v : gg.get_vertices())
+		{
+			std::set<std::uint32_t> lookup;
+
+			for(const edge* eofv : v->get_edges())
+			{
+				const std::uint32_t target_id = eofv->get_target()->get_id();
+
+				EXPECT_TRUE(lookup.find(target_id) == lookup.end());
+				lookup.insert(target_id);
+			}
+		}
+	}
+}
+
+TEST(graph_kostenminimal, check_antiparallel_egdes)
+{
+	using namespace graph;
+
+	std::vector<files> gfiles = {
+		files::Kostenminimal1,
+		files::Kostenminimal2,
+		files::Kostenminimal3,
+		files::Kostenminimal4,
+		files::Kostenminimal6
+	};
+
+	for(const files file : gfiles)
+	{
+		graph::graph gg;
+		loader gl;
+
+		gl.load(file, gg);
+
+		for(const vertex* v : gg.get_vertices())
+		{
+			for(const edge* eOfv : v->get_edges())
+			{
+				const vertex* target = eOfv->get_target();
+				EXPECT_NE(v->get_id(), target->get_id());
+
+				for(const edge* e_of_target : target->get_edges())
+				{
+					EXPECT_NE(v->get_id(), e_of_target->get_target()->get_id());
+				}
+			}
+		}
+	}
+}
+
 TEST(graph_algorithm, create_residual_graph)
 {
 	using namespace graph;

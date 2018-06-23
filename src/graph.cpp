@@ -407,6 +407,41 @@ void graph::remove_edge(const edge& edge_remove)
 //	}
 }
 
+void graph::remove_edges(const vertex* source, const vertex* target)
+{
+	const std::uint32_t source_id = source->get_id();
+	const std::uint32_t target_id = target->get_id();
+
+	vertex* _source = get_vertex_internal(source_id);
+	vertex* _target = get_vertex_internal(target_id);
+
+	std::vector<size_t> hash_list;
+	std::vector<const edge*> source_list, target_list;
+
+	for(const edge* e : _source->get_edges())
+	{
+		if(e->get_target()->get_id() != target_id)
+			continue;
+		source_list.push_back(e);
+		hash_list.push_back(e->get_hash());
+	}
+	for(const edge* e : source_list)
+		_source->remove_edge(e);
+
+	for(const edge* e : _target->get_edges())
+	{
+		if(e->get_target()->get_id() != source_id)
+			continue;
+		target_list.push_back(e);
+		hash_list.push_back(e->get_hash());
+	}
+	for(const edge* e : target_list)
+		_target->remove_edge(e);
+
+	for(std::size_t hash : hash_list)
+		edges.erase(hash);
+}
+
 std::uint32_t graph::get_edge_count(void) const
 {
 	return edges.size();

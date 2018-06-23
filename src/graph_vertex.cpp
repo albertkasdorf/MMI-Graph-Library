@@ -2,6 +2,7 @@
 #include <functional>
 #include <graph_edge.h>
 #include <iostream>
+#include <algorithm>
 
 namespace graph
 {
@@ -56,6 +57,12 @@ void vertex::set_balance(double value)
 void vertex::add_edge(const edge* new_edge)
 {
 	_edges.push_back(new_edge);
+}
+
+void vertex::remove_edge(const edge* e)
+{
+	_edges.erase(std::find(std::begin(_edges), std::end(_edges), e));
+	return;
 }
 
 std::shared_ptr<vertex> vertex::create_copy(void) const
