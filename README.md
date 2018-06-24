@@ -18,3 +18,6 @@
    - Moore-Bellman-Ford-Algorithmus
 5. Maximale Flusse
    - Edmonds-Karp-Algorithmus
+6. Kostenminimale Flusse
+   - Cycle-Canceling-Algorithmus
+   - Successive-Shortest-Path-Algorithmus
