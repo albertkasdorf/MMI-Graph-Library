@@ -36,8 +36,12 @@ set(SOURCES
 	src/graph_comparer.cpp)
 set(SOURCES_MAIN
 	src/main.cpp)
+
 set(SOURCES_TEST
-	test/test.cpp)
+	test/main.cpp
+	test/shortest_path_test.cpp
+	test/minimum_cost_flow_test.cpp
+	test/graph_test.cpp)
 set(FILE_NAME_TEST ${PROJECT_NAME}_test)
 
 #
@@ -47,11 +51,6 @@ set(FILE_NAME_TEST ${PROJECT_NAME}_test)
 enable_testing()
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
-
-# Prepare "Catch" library for other executables
-set(CATCH_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/catch2)
-add_library(Catch INTERFACE)
-target_include_directories(Catch INTERFACE ${CATCH_INCLUDE_DIR})
 
 # Main executable
 add_custom_target(Headers SOURCES ${HEADERS})

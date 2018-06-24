@@ -1152,64 +1152,76 @@ void algorithm::create_residual_graph(
 
 	for(const edge* e : g->get_edges())
 	{
-		const std::uint32_t source_id = e->get_source()->get_id();
-		const std::uint32_t target_id = e->get_target()->get_id();
-
-		// u(e)
-		double edge_capacity = 0.0;
-		if(e->has_capacity())
-			edge_capacity = e->get_capacity();
-		else
-			if(e->has_weight())
-				edge_capacity = e->get_weight();
-			else
-				assert(false);
-		// f(e)
-		const double edge_value = flow_per_edge->at(e);
-		// c(e)
-		double edge_cost = 0.0;
-		if(e->has_cost())
-			edge_cost = e->get_cost();
-		else
-			if(e->has_weight())
-				edge_cost = e->get_weight();
-			else
-				assert(false);
-
-		// residual_capacity
-		// Forward: u^f(e) = u(e) - f(e)
-		const double uf_forward_edge = edge_capacity - edge_value;
-		// Backward: u^f(e) = f(e)
-		const double uf_backward_edge = edge_value;
-
-		if(uf_forward_edge > 0.0)
-		{
-			std::shared_ptr<edge> forward_edge = e->create_copy();
-
-			forward_edge->set_capacity(uf_forward_edge);
-			forward_edge->set_cost(edge_cost);
-			forward_edge->set_source(residual_graph->get_vertex(source_id));
-			forward_edge->set_target(residual_graph->get_vertex(target_id));
-
-			// Insert forward edge
-			residual_graph->add_edge(forward_edge.get());
-		}
-
-		if(uf_backward_edge > 0.0)
-		{
-			std::shared_ptr<edge> backward_edge = e->create_copy();
-
-			backward_edge->set_capacity(uf_backward_edge);
-			backward_edge->set_cost(-edge_cost);
-			backward_edge->set_source(residual_graph->get_vertex(target_id));
-			backward_edge->set_target(residual_graph->get_vertex(source_id));
-
-			// Insert backward edge
-			residual_graph->add_edge(backward_edge.get());
-		}
+		add_residual_edge(e, flow_per_edge, residual_graph);
 	}
 
 	return;
+}
+
+void algorithm::add_residual_edge(
+	const edge* original_edge,
+	const std::unordered_map<
+		const edge*,
+		double,
+		undirected_edge_hash,
+		undirected_edge_equal>* flow_per_edge,
+	graph* residual_graph)
+{
+	const std::uint32_t source_id = original_edge->get_source()->get_id();
+	const std::uint32_t target_id = original_edge->get_target()->get_id();
+
+	// u(e)
+	double edge_capacity = 0.0;
+	if(original_edge->has_capacity())
+		edge_capacity = original_edge->get_capacity();
+	else
+		if(original_edge->has_weight())
+			edge_capacity = original_edge->get_weight();
+		else
+			assert(false);
+	// f(e)
+	const double edge_value = flow_per_edge->at(original_edge);
+	// c(e)
+	double edge_cost = 0.0;
+	if(original_edge->has_cost())
+		edge_cost = original_edge->get_cost();
+	else
+		if(original_edge->has_weight())
+			edge_cost = original_edge->get_weight();
+		else
+			assert(false);
+
+	// residual_capacity
+	// Forward: u^f(e) = u(e) - f(e)
+	const double uf_forward_edge = edge_capacity - edge_value;
+	// Backward: u^f(e) = f(e)
+	const double uf_backward_edge = edge_value;
+
+	if(uf_forward_edge > 0.0)
+	{
+		std::shared_ptr<edge> forward_edge = original_edge->create_copy();
+
+		forward_edge->set_capacity(uf_forward_edge);
+		forward_edge->set_cost(edge_cost);
+		forward_edge->set_source(residual_graph->get_vertex(source_id));
+		forward_edge->set_target(residual_graph->get_vertex(target_id));
+
+		// Insert forward edge
+		residual_graph->add_edge(forward_edge.get());
+	}
+
+	if(uf_backward_edge > 0.0)
+	{
+		std::shared_ptr<edge> backward_edge = original_edge->create_copy();
+
+		backward_edge->set_capacity(uf_backward_edge);
+		backward_edge->set_cost(-edge_cost);
+		backward_edge->set_source(residual_graph->get_vertex(target_id));
+		backward_edge->set_target(residual_graph->get_vertex(source_id));
+
+		// Insert backward edge
+		residual_graph->add_edge(backward_edge.get());
+	}
 }
 
 void algorithm::cc_find_negative_cycle(
@@ -1321,197 +1333,200 @@ void algorithm::cc_find_negative_cycle(
 	return;
 }
 
+//
+// Not working
+//
+//void algorithm::successive_shortest_path(
+//	const graph* full_graph,
+//	bool* minimum_cost_flow_found,
+//	double* minimum_cost_flow)
+//{
+//	const bool show_viz = false;
+
+//	std::unordered_map<
+//		const edge*,
+//		double,
+//		undirected_edge_hash,
+//		undirected_edge_equal> flow_per_edge;
+
+
+//	*minimum_cost_flow_found = false;
+//	*minimum_cost_flow = 0.0;
+
+//	// Schritt 1: Initialisierung des Graph
+//	// - Kanten mit negativen Kosten: voll auslasten
+//	// - Restliche Kanten: 0
+//	for(const edge* e : full_graph->get_edges())
+//	{
+//		double flow = 0.0;
+
+//		if(e->get_cost() < 0.0)
+//			flow = e->get_capacity();
+
+//		flow_per_edge.insert(std::make_pair(e, flow));
+//		assert(flow_per_edge[e] >= 0.0);
+//	}
+
+//	viz_flow(show_viz, &flow_per_edge);
+
+//	while(true)
+//	{
+//		// Schritt 2: Pseudo-Quellen und –Senken ermitteln
+//		// - Pseudo-Quellen: b(s) > b'(s)
+//		// - Pseudo-Senken: b(t) < b'(t)
+//		std::vector<const vertex*> pseudo_source, pseudo_target;
+//		std::map<const vertex*, double, compare_vertex_id> b_prime;
+
+
+//		// Compute values for b_prime
+//		compute_b_prime(full_graph, &flow_per_edge, &b_prime);
+
+//		// Create two lists of pseudo_source(s) and pseudo_target(s)
+//		generate_pseudo_source_target(
+//			full_graph, &b_prime, &pseudo_source, &pseudo_target);
+
+//		viz_pseudo_source_target(show_viz, &pseudo_source, &pseudo_target);
+
+//		// Pseudo balance b'(v) and vertex balance b(v) are equal.
+//		if(pseudo_source.empty() && pseudo_target.empty())
+//		{
+//			*minimum_cost_flow_found = true;
+//			break;
+//		}
+
+//		// Only one source or one target, can not create b-flow.
+//		if(pseudo_source.empty() || pseudo_target.empty())
+//		{
+//			*minimum_cost_flow_found = false;
+//			break;
+//		}
+
+//		// Schritt 3:
+//		// Wenn Pseudo-Quelle und erreichbare –Senke existiert:
+//		// Kürzesten Weg zwischen Pseudo-Quelle und –Senke in G^f
+//		// bzgl. c^f berechnen, sonst zu Schritt 6 gehen
+//		graph residual_graph;
+
+//		create_residual_graph(full_graph, &flow_per_edge, &residual_graph);
+
+//		viz_graph(show_viz, "Residual", &residual_graph);
+
+//		std::list<std::pair<const edge*, bool>> path_of_change;
+//		double min_capacity = std::numeric_limits<double>::infinity();
+//		std::pair<const vertex*, const vertex*> path_start_end = std::make_pair(nullptr, nullptr);
+
+//		// Searching for a (s,t)-path.
+//		for(const vertex* source : pseudo_source)
+//		{
+//			std::unordered_map<std::uint32_t, const edge*> predecessor;
+//			std::unordered_map<std::uint32_t, double> distances;
+
+//			moore_bellman_ford(
+//				&residual_graph, source, &predecessor, &distances, nullptr);
+
+//			for(const vertex* target : pseudo_target)
+//			{
+//				if(distances[target->get_id()] == std::numeric_limits<double>::infinity())
+//					continue;
+
+//				std::list<const edge*> path;
+//				const edge* e_to_pred = nullptr;
+
+//				e_to_pred = predecessor[target->get_id()];
+//				while(e_to_pred != nullptr)
+//				{
+//					path.push_front(e_to_pred);
+//					e_to_pred = predecessor[e_to_pred->get_source()->get_id()];
+//				}
+
+//				// There exist no path
+//				if(path.empty())
+//					continue;
+
+//				// Path to the source does not exist.
+//				if(path.front()->get_source()->get_id() != source->get_id())
+//					continue;
+
+//				// Translate residual_graph edges to full_graph edges
+//				for(const edge* e : path)
+//				{
+//					const edge* e_from_full_graph = full_graph->get_edge(e, false);
+//					const bool same_direction =
+//						(e->get_source()->get_id() == e_from_full_graph->get_source()->get_id());
+
+//					path_of_change.push_back(
+//						std::make_pair(e_from_full_graph, same_direction));
+//					min_capacity = std::min(
+//						min_capacity, e_from_full_graph->get_capacity());
+//				}
+//				path_start_end = std::make_pair(
+//					full_graph->get_vertex(source->get_id()),
+//					full_graph->get_vertex(target->get_id()));
+
+//				break;
+//			}
+
+//			// Hint:
+//			// If we do not found a flow from the source to a target,
+//			// we will never found a flow.
+//			if(path_of_change.empty())
+//				continue;
+//			else
+//				break;
+//		}
+
+//		// There is no way between the source(s) and target(s).
+//		if(path_of_change.empty())
+//		{
+//			*minimum_cost_flow_found = false;
+//			break;
+//		}
+
+//		// Schritt 4:
+//		// Flusserhöhung durchführen und ggf. Pseudo-Quellen/-Senken entfernen
+//		const double diff_b_and_b_prime =
+//			path_start_end.first->get_balance() - b_prime[path_start_end.first];
+//		const double diff_b_prime_and_b =
+//			b_prime[path_start_end.second] - path_start_end.second->get_balance();
+//		const double gamma =
+//			std::min(min_capacity, std::min(diff_b_and_b_prime, diff_b_prime_and_b));
+
+//		viz_flow_change(show_viz, &path_of_change, gamma);
+
+//		for(std::pair<const edge*, bool> kvp : path_of_change)
+//		{
+//			const double sign = (kvp.second) ? 1.0 : -1.0;
+//			const double flow = flow_per_edge[kvp.first];
+
+//			flow_per_edge[kvp.first] = flow + (gamma * sign);
+
+//			assert(flow_per_edge[kvp.first] >= 0.0);
+//		}
+
+//		viz_flow(show_viz, &flow_per_edge);
+
+//		// Schritt 5:
+//		// Gehen Sie zu Schritt 3
+//	}
+
+//	// Schritt 6:
+//	// Wenn Balancen ausgeglichen sind: kostenminimalen Fluss gefunden
+//	// Sonst: kein b-Fluss vorhanden
+//	if(*minimum_cost_flow_found)
+//	{
+//		for(const edge* e : full_graph->get_edges())
+//		{
+//			const double flow = flow_per_edge[e];
+//			const double cost = e->get_cost();
+
+//			*minimum_cost_flow += (flow * cost);
+//		}
+//	}
+
+//	return;
+//}
+
 void algorithm::successive_shortest_path(
-	const graph* full_graph,
-	bool* minimum_cost_flow_found,
-	double* minimum_cost_flow)
-{
-	const bool show_viz = false;
-
-	std::unordered_map<
-		const edge*,
-		double,
-		undirected_edge_hash,
-		undirected_edge_equal> flow_per_edge;
-
-
-	*minimum_cost_flow_found = false;
-	*minimum_cost_flow = 0.0;
-
-	// Schritt 1: Initialisierung des Graph
-	// - Kanten mit negativen Kosten: voll auslasten
-	// - Restliche Kanten: 0
-	for(const edge* e : full_graph->get_edges())
-	{
-		double flow = 0.0;
-
-		if(e->get_cost() < 0.0)
-			flow = e->get_capacity();
-
-		flow_per_edge.insert(std::make_pair(e, flow));
-		assert(flow_per_edge[e] >= 0.0);
-	}
-
-	viz_flow(show_viz, &flow_per_edge);
-
-	while(true)
-	{
-		// Schritt 2: Pseudo-Quellen und –Senken ermitteln
-		// - Pseudo-Quellen: b(s) > b'(s)
-		// - Pseudo-Senken: b(t) < b'(t)
-		std::vector<const vertex*> pseudo_source, pseudo_target;
-		std::map<const vertex*, double, compare_vertex_id> b_prime;
-
-
-		// Compute values for b_prime
-		compute_b_prime(full_graph, &flow_per_edge, &b_prime);
-
-		// Create two lists of pseudo_source(s) and pseudo_target(s)
-		generate_pseudo_source_target(
-			full_graph, &b_prime, &pseudo_source, &pseudo_target);
-
-		viz_pseudo_source_target(show_viz, &pseudo_source, &pseudo_target);
-
-		// Pseudo balance b'(v) and vertex balance b(v) are equal.
-		if(pseudo_source.empty() && pseudo_target.empty())
-		{
-			*minimum_cost_flow_found = true;
-			break;
-		}
-
-		// Only one source or one target, can not create b-flow.
-		if(pseudo_source.empty() || pseudo_target.empty())
-		{
-			*minimum_cost_flow_found = false;
-			break;
-		}
-
-		// Schritt 3:
-		// Wenn Pseudo-Quelle und erreichbare –Senke existiert:
-		// Kürzesten Weg zwischen Pseudo-Quelle und –Senke in G^f
-		// bzgl. c^f berechnen, sonst zu Schritt 6 gehen
-		graph residual_graph;
-
-		create_residual_graph(full_graph, &flow_per_edge, &residual_graph);
-
-		viz_graph(show_viz, "Residual", &residual_graph);
-
-		std::list<std::pair<const edge*, bool>> path_of_change;
-		double min_capacity = std::numeric_limits<double>::infinity();
-		std::pair<const vertex*, const vertex*> path_start_end = std::make_pair(nullptr, nullptr);
-
-		// Searching for a (s,t)-path.
-		for(const vertex* source : pseudo_source)
-		{
-			std::unordered_map<std::uint32_t, const edge*> predecessor;
-			std::unordered_map<std::uint32_t, double> distances;
-
-			moore_bellman_ford(
-				&residual_graph, source, &predecessor, &distances, nullptr);
-
-			for(const vertex* target : pseudo_target)
-			{
-				if(distances[target->get_id()] == std::numeric_limits<double>::infinity())
-					continue;
-
-				std::list<const edge*> path;
-				const edge* e_to_pred = nullptr;
-
-				e_to_pred = predecessor[target->get_id()];
-				while(e_to_pred != nullptr)
-				{
-					path.push_front(e_to_pred);
-					e_to_pred = predecessor[e_to_pred->get_source()->get_id()];
-				}
-
-				// There exist no path
-				if(path.empty())
-					continue;
-
-				// Path to the source does not exist.
-				if(path.front()->get_source()->get_id() != source->get_id())
-					continue;
-
-				// Translate residual_graph edges to full_graph edges
-				for(const edge* e : path)
-				{
-					const edge* e_from_full_graph = full_graph->get_edge(e, false);
-					const bool same_direction =
-						(e->get_source()->get_id() == e_from_full_graph->get_source()->get_id());
-
-					path_of_change.push_back(
-						std::make_pair(e_from_full_graph, same_direction));
-					min_capacity = std::min(
-						min_capacity, e_from_full_graph->get_capacity());
-				}
-				path_start_end = std::make_pair(
-					full_graph->get_vertex(source->get_id()),
-					full_graph->get_vertex(target->get_id()));
-
-				break;
-			}
-
-			// Hint:
-			// If we do not found a flow from the source to a target,
-			// we will never found a flow.
-			if(path_of_change.empty())
-				continue;
-			else
-				break;
-		}
-
-		// There is no way between the source(s) and target(s).
-		if(path_of_change.empty())
-		{
-			*minimum_cost_flow_found = false;
-			break;
-		}
-
-		// Schritt 4:
-		// Flusserhöhung durchführen und ggf. Pseudo-Quellen/-Senken entfernen
-		const double diff_b_and_b_prime =
-			path_start_end.first->get_balance() - b_prime[path_start_end.first];
-		const double diff_b_prime_and_b =
-			b_prime[path_start_end.second] - path_start_end.second->get_balance();
-		const double gamma =
-			std::min(min_capacity, std::min(diff_b_and_b_prime, diff_b_prime_and_b));
-
-		viz_flow_change(show_viz, &path_of_change, gamma);
-
-		for(std::pair<const edge*, bool> kvp : path_of_change)
-		{
-			const double sign = (kvp.second) ? 1.0 : -1.0;
-			const double flow = flow_per_edge[kvp.first];
-
-			flow_per_edge[kvp.first] = flow + (gamma * sign);
-
-			assert(flow_per_edge[kvp.first] >= 0.0);
-		}
-
-		viz_flow(show_viz, &flow_per_edge);
-
-		// Schritt 5:
-		// Gehen Sie zu Schritt 3
-	}
-
-	// Schritt 6:
-	// Wenn Balancen ausgeglichen sind: kostenminimalen Fluss gefunden
-	// Sonst: kein b-Fluss vorhanden
-	if(*minimum_cost_flow_found)
-	{
-		for(const edge* e : full_graph->get_edges())
-		{
-			const double flow = flow_per_edge[e];
-			const double cost = e->get_cost();
-
-			*minimum_cost_flow += (flow * cost);
-		}
-	}
-
-	return;
-}
-
-void algorithm::successive_shortest_path_on_residual(
 	const graph* g, bool* minimum_cost_flow_found, double* minimum_cost_flow)
 {
 	std::unordered_map<
@@ -1520,8 +1535,8 @@ void algorithm::successive_shortest_path_on_residual(
 		undirected_edge_hash,
 		undirected_edge_equal> flow_per_edge;
 	std::map<std::uint32_t, double> b_of_v, b_prime_of_v;
-	std::vector<std::uint32_t> pseudo_source, pseudo_target;
-	graph gres;
+	std::vector<std::uint32_t> pseudo_sources, pseudo_targets;
+	graph residual_graph;
 
 
 	// Schritt 1: Initialisierung des Graph
@@ -1545,15 +1560,17 @@ void algorithm::successive_shortest_path_on_residual(
 		std::vector<const vertex*> _pseudo_source, _pseudo_target;
 
 		compute_b_prime(g, &flow_per_edge, &b_prime);
+
 		for(auto kvp : b_prime)
 			b_prime_of_v[kvp.first->get_id()] = kvp.second;
 
 		generate_pseudo_source_target(
 			g, &b_prime, &_pseudo_source, &_pseudo_target);
+
 		for(const vertex* v : _pseudo_source)
-			pseudo_source.push_back(v->get_id());
+			pseudo_sources.push_back(v->get_id());
 		for(const vertex* v : _pseudo_target)
-			pseudo_target.push_back(v->get_id());
+			pseudo_targets.push_back(v->get_id());
 	}
 	for(const vertex* v : g->get_vertices())
 		b_of_v[v->get_id()] = v->get_balance();
@@ -1563,18 +1580,18 @@ void algorithm::successive_shortest_path_on_residual(
 	// Wenn Pseudo-Quelle und erreichbare –Senke existiert:
 	// Kürzesten Weg zwischen Pseudo-Quelle und –Senke in G^f
 	// bzgl. c^f berechnen, sonst zu Schritt 6 gehen
-	create_residual_graph(g, &flow_per_edge, &gres);
+	create_residual_graph(g, &flow_per_edge, &residual_graph);
 
 	while(true)
 	{
 		// Pseudo balance b'(v) and vertex balance b(v) are equal.
-		if(pseudo_source.empty() && pseudo_target.empty())
+		if(pseudo_sources.empty() && pseudo_targets.empty())
 		{
 			*minimum_cost_flow_found = true; break;
 		}
 
 		// Only sources or targets left, can not create b-flow.
-		if(pseudo_source.empty() || pseudo_target.empty())
+		if(pseudo_sources.empty() || pseudo_targets.empty())
 		{
 			*minimum_cost_flow_found = false; break;
 		}
@@ -1582,19 +1599,24 @@ void algorithm::successive_shortest_path_on_residual(
 		// Searching for a (s,t)-path.
 		std::list<const edge*> st_path;
 
-		for(const std::uint32_t psrc : pseudo_source)
+		for(const std::uint32_t pseudo_source : pseudo_sources)
 		{
 			std::unordered_map<std::uint32_t, const edge*> predecessor;
 			std::unordered_map<std::uint32_t, double> distances;
 
-			moore_bellman_ford(&gres, gres.get_vertex(psrc), &predecessor, &distances, nullptr);
+			moore_bellman_ford(
+				&residual_graph,
+				residual_graph.get_vertex(pseudo_source),
+				&predecessor,
+				&distances,
+				nullptr);
 
-			for(const std::uint32_t ptgt : pseudo_target)
+			for(const std::uint32_t pseudo_target : pseudo_targets)
 			{
-				if(distances[ptgt] == std::numeric_limits<double>::infinity())
+				if(distances[pseudo_target] == std::numeric_limits<double>::infinity())
 					continue;
 
-				const edge* e_to_pred = predecessor[ptgt];
+				const edge* e_to_pred = predecessor[pseudo_target];
 				while(e_to_pred != nullptr)
 				{
 					st_path.push_front(e_to_pred);
@@ -1631,14 +1653,14 @@ void algorithm::successive_shortest_path_on_residual(
 		// Change flow throw the st_path
 		for(const edge* e : st_path)
 		{
-			const double flow_old = flow_per_edge[e];
-
 			assert(flow_per_edge.count(e) == 1);
 			auto iter = flow_per_edge.find(e);
 			assert(iter != flow_per_edge.end());
 
-			const edge* eorg = iter->first;
-			const bool same_direction = eorg->get_source()->get_id() == e->get_source()->get_id();
+			const double flow_old = iter->second;
+			const edge* original_edge = iter->first;
+			const bool same_direction =
+				(original_edge->get_source()->get_id() == e->get_source()->get_id());
 
 			const double sign = (same_direction) ? 1.0 : -1.0;
 			const double flow_new = flow_old + (sign * gamma);
@@ -1655,9 +1677,11 @@ void algorithm::successive_shortest_path_on_residual(
 		const bool remove_target = (b_of_v[target_id] == b_prime_of_v[target_id]);
 
 		if(remove_source)
-			pseudo_source.erase(std::find(std::begin(pseudo_source), std::end(pseudo_source), source_id));
+			pseudo_sources.erase(std::find(
+				std::begin(pseudo_sources), std::end(pseudo_sources), source_id));
 		if(remove_target)
-			pseudo_target.erase(std::find(std::begin(pseudo_target), std::end(pseudo_target), target_id));
+			pseudo_targets.erase(std::find(
+				std::begin(pseudo_targets), std::end(pseudo_targets), target_id));
 
 		// Change residual graph
 		for(const edge* e : st_path)
@@ -1665,59 +1689,14 @@ void algorithm::successive_shortest_path_on_residual(
 			assert(flow_per_edge.count(e) == 1);
 			auto iter = flow_per_edge.find(e);
 			assert(iter != flow_per_edge.end());
-			const edge* eorg = iter->first;
+			const edge* original_edge = iter->first;
 
 			//----
-			gres.remove_edges(e->get_source(), e->get_target());
+			residual_graph.remove_edges(e->get_source(), e->get_target());
 			e = nullptr;
 
 			//----
-			const std::uint32_t source_id = eorg->get_source()->get_id();
-			const std::uint32_t target_id = eorg->get_target()->get_id();
-
-			// u(e)
-			double edge_capacity = 0.0;
-			if(eorg->has_capacity())
-				edge_capacity = eorg->get_capacity();
-			else
-				if(eorg->has_weight())
-					edge_capacity = eorg->get_weight();
-				else
-					assert(false);
-			// f(e)
-			const double edge_value = flow_per_edge[eorg];
-
-			// residual_capacity
-			// Forward: u^f(e) = u(e) - f(e)
-			const double uf_forward_edge = edge_capacity - edge_value;
-			// Backward: u^f(e) = f(e)
-			const double uf_backward_edge = edge_value;
-
-			if(uf_forward_edge > 0.0)
-			{
-				std::shared_ptr<edge> forward_edge = eorg->create_copy();
-
-				forward_edge->set_capacity(uf_forward_edge);
-				forward_edge->set_cost(eorg->get_cost());
-				forward_edge->set_source(gres.get_vertex(source_id));
-				forward_edge->set_target(gres.get_vertex(target_id));
-
-				// Insert forward edge
-				gres.add_edge(forward_edge.get());
-			}
-
-			if(uf_backward_edge > 0.0)
-			{
-				std::shared_ptr<edge> backward_edge = eorg->create_copy();
-
-				backward_edge->set_capacity(uf_backward_edge);
-				backward_edge->set_cost(-eorg->get_cost());
-				backward_edge->set_source(gres.get_vertex(target_id));
-				backward_edge->set_target(gres.get_vertex(source_id));
-
-				// Insert backward edge
-				gres.add_edge(backward_edge.get());
-			}
+			add_residual_edge(original_edge, &flow_per_edge, &residual_graph);
 		}
 
 		// Schritt 5:

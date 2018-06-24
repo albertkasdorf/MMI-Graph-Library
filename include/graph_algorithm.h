@@ -119,8 +119,7 @@ public:
 	//
 	// Successive Shortest Path Algorithm
 	//
-	void successive_shortest_path(const graph*, bool*, double*);
-	void successive_shortest_path_on_residual(
+	void successive_shortest_path(
 		const graph* g, bool* minimum_cost_flow_found, double* minimum_cost_flow);
 
 	void compute_b_prime(
@@ -137,6 +136,15 @@ public:
 
 	void create_residual_graph(
 		const graph* g,
+		const std::unordered_map<
+			const edge*,
+			double,
+			undirected_edge_hash,
+			undirected_edge_equal>* flow_per_edge,
+		graph* residual_graph);
+
+	void add_residual_edge(
+		const edge* original_edge,
 		const std::unordered_map<
 			const edge*,
 			double,
@@ -165,9 +173,6 @@ private:
 		std::vector<std::shared_ptr<graph>>*,
 		const std::function<void(const graph*, const vertex*, graph*)>&);
 
-	//
-	//
-	//
 	void try_all_routes_recursive(
 		const vertex* const,
 		const bool* const,
@@ -179,9 +184,6 @@ private:
 		std::stack<const edge*>* const,
 		double* const);
 
-	//
-	//
-	//
 	void get_shortest_path(
 		const graph*,
 		const vertex*,
@@ -190,9 +192,6 @@ private:
 		double*,
 		std::function<double(const edge*)> capacity_of_edge);
 
-	//
-	//
-	//
 	void cc_compute_b_flow(
 		const graph* full_graph,
 		bool* b_flow_exist,
@@ -202,14 +201,6 @@ private:
 			undirected_edge_hash,
 			undirected_edge_equal>* flow_per_edge);
 
-	//
-	//
-	//
-
-
-	//
-	//
-	//
 	void cc_find_negative_cycle(
 		const graph* residual_graph,
 		const std::unordered_map<
@@ -220,9 +211,6 @@ private:
 		std::list<const edge*>* cycle,
 		double* gamma);
 
-	//
-	//
-	//
 	void viz_flow(
 		const bool show_viz,
 		const std::unordered_map<
@@ -231,33 +219,21 @@ private:
 			undirected_edge_hash,
 			undirected_edge_equal>* flow_per_edge);
 
-	//
-	//
-	//
 	void viz_graph(
 		const bool show_viz,
 		const char* graph_type,
 		const graph* graph);
 
-	//
-	//
-	//
 	void viz_pseudo_source_target(
 		const bool show_viz,
 		const std::vector<const vertex*>* pseudo_source,
 		const std::vector<const vertex*>* pseudo_target);
 
-	//
-	//
-	//
 	void viz_flow_change(
 		const bool show_viz,
 		const std::list<std::pair<const edge*, bool>>* path_of_change,
 		const double gamma);
 
-	//
-	//
-	//
 	void viz_cycle(
 		const bool show_viz,
 		const std::list<const edge*>* cycle,

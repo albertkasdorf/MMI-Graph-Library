@@ -491,7 +491,7 @@ void practical_training::task06_minimum_cost_flow(void)
 	std::cout << "\n";
 
 	std::cout << "=== Successive Shortest Path ===\n";
-	algorithm.successive_shortest_path_on_residual(
+	algorithm.successive_shortest_path(
 		&full_graph, &minimum_cost_flow_found, &minimum_cost_flow);
 	if(minimum_cost_flow_found)
 		std::cout << "Minimal cost flow is " << minimum_cost_flow << "\n";
