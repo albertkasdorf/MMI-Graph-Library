@@ -1861,5 +1861,74 @@ void algorithm::viz_cycle(
 	std::cout.flush();
 }
 
+void algorithm::maximal_matching(
+	const graph* g, const uint32_t set_seperator, double* maximal_matchings)
+{
+	const double cost = 1.0;
+	const double capacity = 1.0;
+
+	graph matching_graph;
+	const vertex* super_source_vertex = nullptr;
+	const vertex* super_target_vertex = nullptr;
+
+	// Copy the vertices from the original graph
+	for(const vertex* v : g->get_vertices())
+	{
+		matching_graph.add_vertex(v);
+	}
+
+	// Copy the edges from the original graph but with cost and capacity of 1.0.
+	// The value of the cost is not relevant because
+	// edmonds_karp search internal for shortest paths.
+	for(const edge* e : g->get_edges())
+	{
+		matching_graph.add_directed_edge(
+			e->get_source()->get_id(), e->get_target()->get_id(), cost, capacity);
+	}
+
+	// Create a vertex for the super source/target
+	super_source_vertex = matching_graph.add_vertex(nullptr, nullptr);
+	super_target_vertex = matching_graph.add_vertex(nullptr, nullptr);
+
+	// Create edge to connect every super source/target with the vertices
+	// of set A or B.
+	for(const vertex* v : g->get_vertices())
+	{
+		const uint32_t vertex_id = v->get_id();
+
+		if(vertex_id < set_seperator)
+		{
+			matching_graph.add_directed_edge(
+				super_source_vertex->get_id(), vertex_id, cost, capacity);
+		}
+		else
+		{
+			matching_graph.add_directed_edge(
+				vertex_id, super_target_vertex->get_id(), cost, capacity);
+		}
+	}
+
+	std::unordered_map<
+		const edge*,
+		double,
+		undirected_edge_hash,
+		undirected_edge_equal> flow_per_edge;
+	double maximum_flow = 0.0;
+	std::function<double(const edge*)> capacity_of_edge = [](const edge* e)
+	{
+		return e->get_capacity();
+	};
+
+	edmonds_karp(
+		&matching_graph,
+		super_source_vertex,
+		super_target_vertex,
+		&flow_per_edge,
+		&maximum_flow,
+		capacity_of_edge);
+
+	*maximal_matchings = maximum_flow;
+}
+
 
 }

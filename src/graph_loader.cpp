@@ -60,6 +60,8 @@ std::string loader::file_name_get(const files& graph_file)
 	case files::Kostenminimal4: file_name = "Kostenminimal4.txt"; break;
 	case files::Kostenminimal5: file_name = "Kostenminimal5.txt"; break;
 	case files::Kostenminimal6: file_name = "Kostenminimal6.txt"; break;
+	case files::Matching_100_100: file_name = "Matching_100_100.txt"; break;
+	case files::Matching2_100_100: file_name = "Matching2_100_100.txt"; break;
 	default: assert(false);
 	}
 
@@ -115,6 +117,10 @@ void loader::load(
 	case files::Kostenminimal5:
 	case files::Kostenminimal6:
 		load_edge_list_minimum_cost_flow(file_name, graph);
+		break;
+	case files::Matching_100_100:
+	case files::Matching2_100_100:
+		load_edge_list_matching(file_name, graph);
 		break;
 	default: assert(false);
 	}
@@ -246,6 +252,39 @@ void loader::load_edge_list_minimum_cost_flow(
 			break;
 
 		graph.add_directed_edge(source_id, target_id, cost, capacity);
+	}
+
+	assert(graph.get_vertex_count() == vertex_count);
+}
+
+void loader::load_edge_list_matching(
+	const std::string& file_name,
+	graph& graph)
+{
+	std::fstream fs;
+	std::uint32_t vertex_count = 0;
+	std::uint32_t vertex_count_first_group = 0;
+
+	fs.open(file_name.c_str());
+	fs >> vertex_count;
+	fs >> vertex_count_first_group;
+
+	// create vertices
+	for(std::uint32_t i = 0; i < vertex_count; ++i)
+	{
+		graph.add_vertex(i);
+	}
+
+	// create edges
+	while(true)
+	{
+		std::uint32_t source_id = {}, target_id = {};
+
+		fs >> source_id >> target_id;
+		if(fs.eof())
+			break;
+
+		graph.add_directed_edge(source_id, target_id);
 	}
 
 	assert(graph.get_vertex_count() == vertex_count);

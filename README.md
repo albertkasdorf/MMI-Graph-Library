@@ -18,3 +18,5 @@
    - Moore-Bellman-Ford-Algorithmus
 5. Maximale Flusse
    - Edmonds-Karp-Algorithmus
+6. Maximale Matchings in bipartiten Graphen
+   - Bestimmung mit maximalen Flussen 

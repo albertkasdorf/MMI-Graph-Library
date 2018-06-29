@@ -284,6 +284,13 @@ void graph::add_undirected_edge(
 }
 
 void graph::add_directed_edge(
+	const uint32_t& source_id,
+	const uint32_t& target_id)
+{
+	add_directed_edge(source_id, target_id, nullptr);
+}
+
+void graph::add_directed_edge(
 	const uint32_t& source_id, const uint32_t& target_id, const double& weight)
 {
 	add_directed_edge(source_id, target_id, &weight);
@@ -316,7 +323,7 @@ void graph::add_directed_edge(
 	edges.insert(std::make_pair(hash_src_edge, src_tgt_edge));
 }
 
-void graph::add_directed_edge(
+const edge* graph::add_directed_edge(
 	const uint32_t source_id,
 	const uint32_t target_id,
 	const double cost,
@@ -341,6 +348,8 @@ void graph::add_directed_edge(
 	const std::size_t hash_src_edge = src_tgt_edge->get_hash();
 
 	edges.insert(std::make_pair(hash_src_edge, src_tgt_edge));
+
+	return src_tgt_edge.get();
 }
 
 void graph::remove_edge(const edge& edge_remove)

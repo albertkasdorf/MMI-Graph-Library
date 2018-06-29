@@ -19,6 +19,7 @@ public:
 	void task04_shortest_path(void);
 	void task05_maximum_flow(void);
 	void task06_minimum_cost_flow(void);
+	void task07_maximal_matchings(void);
 
 private:
 	void print_tsp_result(

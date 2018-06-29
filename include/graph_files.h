@@ -38,6 +38,8 @@ enum class files
 	Kostenminimal4,
 	Kostenminimal5,
 	Kostenminimal6,
+	Matching_100_100,
+	Matching2_100_100,
 };
 
 }

@@ -33,6 +33,9 @@ private:
 	void load_edge_list_minimum_cost_flow(
 		const std::string& file_name,
 		graph& graph);
+
+	void load_edge_list_matching(
+		const std::string& file_name, graph& graph);
 };
 
 }

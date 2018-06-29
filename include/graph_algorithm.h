@@ -158,6 +158,9 @@ public:
 		std::vector<const vertex*>* pseudo_sources,
 		std::vector<const vertex*>* pesudo_targets);
 
+	void maximal_matching(
+		const graph* g, const uint32_t set_seperator, double* maximal_matchings);
+
 private:
 	void depth_first_search_recursive(
 		const graph*,

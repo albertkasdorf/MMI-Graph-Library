@@ -52,6 +52,7 @@ public:
 	//
 	void add_edge(const edge*);
 	//void add_edge(const edge&);
+
 	void add_undirected_edge(
 		const uint32_t&, const uint32_t&);
 	void add_undirected_edge(
@@ -65,6 +66,8 @@ public:
 	// - Vertices created if they not exist in graph.
 	//
 	void add_directed_edge(
+		const uint32_t& source_id, const uint32_t& target_id);
+	void add_directed_edge(
 		const uint32_t&, const uint32_t&, const double&);
 	void add_directed_edge(
 		const uint32_t&, const uint32_t&, const double*);
@@ -72,7 +75,7 @@ public:
 	//
 	// Add a new directed edge to the graph. (With cost and capacity)
 	//
-	void add_directed_edge(
+	const edge* add_directed_edge(
 		const uint32_t source_id,
 		const uint32_t target_id,
 		const double cost,

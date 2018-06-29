@@ -499,3 +499,26 @@ void practical_training::task06_minimum_cost_flow(void)
 		std::cout << "Minimal cost flow not found.\n";
 	std::cout << "\n";
 }
+
+//
+// In Klammern stehen die Anzahl der Matchingkanten.
+// Matching_100_100 (100)
+// Matching2_100_100 (99)
+//
+void practical_training::task07_maximal_matchings(void)
+{
+	graph::loader graph_loader;
+	const graph::files graph_file = graph::files::Matching_100_100;
+	graph::graph full_graph;
+	graph::algorithm algorithm;
+	double maximal_matchings = 0.0;
+
+	std::cout << "Loading graph file: ";
+	std::cout << graph_loader.file_name_get(graph_file) << "\n\n";
+	graph_loader.load(graph_file, full_graph);
+
+	std::cout << "=== Maximal Matching ===\n";
+	algorithm.maximal_matching(&full_graph, 100, &maximal_matchings);
+	std::cout << "Maximal matchings found: " << maximal_matchings << "\n";
+	std::cout.flush();
+}
