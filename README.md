@@ -18,5 +18,8 @@
    - Moore-Bellman-Ford-Algorithmus
 5. Maximale Flusse
    - Edmonds-Karp-Algorithmus
-6. Maximale Matchings in bipartiten Graphen
+6. Kostenminimale Flusse
+   - Cycle-Canceling-Algorithmus
+   - Successive-Shortest-Path-Algorithmus
+7. Maximale Matchings in bipartiten Graphen
    - Bestimmung mit maximalen Flussen 
